@@ -29,7 +29,7 @@ void data_handler::ler_vetor_de_recursos(string path)
 				header[i] = converta_para_pequeno_indian(bytes);			
 			};
 		};
-		printf("Termino da obtenção do cabeçalho do arquivo.\n");
+		printf("Termino da obtenção do cabeçalho do arquivo de entrada.\n");
 		int tamanho_da_imagem = header[2]*header[3];
 		for(int i=0;i<header[1];i++)
 		{
@@ -55,8 +55,95 @@ void data_handler::ler_vetor_de_recursos(string path)
 		exit(1);
 	}
 }
-void data_handler::ler_labels_de_recursos(string path);
-void data_handler::dividir_dados();
+void data_handler::ler_labels_de_recursos(string path)
+{
+uint8_t header[2];
+	unsigned char bytes[2];
+	FILE *f = fopen(path.c_str(), "r");
+	
+	if(f)
+	{
+		for(int i=0;i<2;i++)
+		{
+			if(fread(bytes, sizeof(bytes), 1, f))
+			{
+				header[i] = converta_para_pequeno_indian(bytes);			
+			}
+		}
+		printf("Termino da obtenção da label do cabeçalho do arquivo.\n");
+		for(int i=0;i<header[1];i++)
+		{	
+			uint8_t elemento[1];
+			if(fread(elemento, sizeof(elemento, 1, f)))
+			{
+				vetor_de_dados->at(i)->definir_label(elemento[0]);
+			}	else 
+			{
+				printf("Erro na leitura do arquivo!!!\n");
+				exit(1);
+			}		
+		}
+		prinf("A leitura e salvamento da %lu label foi um sucesso.\n", lista_de_dados->size());
+	} else 
+	{
+		prinf("Arquivo não encontrado!!!\n");
+		exit(1);
+	}
+}
+
+void data_handler::dividir_dados()
+{
+	unordered_set<int> indices_usados;
+	int tamanho_do_treinamento = vetor_de_dados->size() * PORCENTAGEM_DE_TREINAMENTO
+	int tamanho_do_teste       = vetor_de_dados->size() * PORCENTAGEM_DO_TESTE
+	int tamanho_da_validacao   = vetor_de_dados->size() * PORCENTAGEM_DE_VALIDACAO
+
+	// Dados de Treinamento
+
+	int count = 0;
+	while(count < tamanho_do_treinamento)
+	{
+		int rand_indice = rand() % vetor_de_dados	->size();
+		if(indices_usados.find(rand_indice) == indices_usados.end())
+		{
+			dados_de_treinamento->push_back(vetor_de_dados->at(rand_indice));
+			indices_usados.insert(rand_indice);
+			count++;	
+		}
+	}
+
+	// Dados de Teste
+
+	int count = 0;
+	while(count < tamanho_do_teste)
+	{
+		int rand_indice = rand() % vetor_de_dados	->size();
+		if(indices_usados.find(rand_indice) == indices_usados.end())
+		{
+			dados_de_teste->push_back(vetor_de_dados->at(rand_indice));
+			indices_usados.insert(rand_indice);
+			count++;
+		}
+	}
+
+	// Dados de Validação
+
+	int count = 0;
+	while(count < tamanho_da_validacao)
+	{
+		int rand_indice = rand() % vetor_de_dados	->size();
+		if(indices_usados.find(rand_indice) == indices_usados.end())
+		{
+			dados_de_validacao->push_back(vetor_de_dados->at(rand_indice));
+			indices_usados.insert(rand_indice);
+			count++;
+		}
+	}
+
+	printf("Tamanho dos dados de treinamento %lu.\n", dados_de_treinamento);
+	printf("Tamanho dos dados de teste %lu.\n",       dados_de_teste);
+	printf("Tamanho dos dados de validação %lu.\n",   dados_de_validação);
+}
 void data_handler::contar_classes();
 
 uint32_t data_handler::converta_para_pequeno_endian(const unsigned char* bytes);

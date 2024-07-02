@@ -22,7 +22,7 @@ class data_handler
   map<uint8_t, int> classe_map;
 
   const double PORCENTAGEM_DE_TREINAMENTO = 0.75;
-  const double PORCENTAGEM_DE_TESTE       = 0.20;
+  const double PORCENTAGEM_DO_TESTE       = 0.20;
   const double PORCENTAGEM_DE_VALIDACAO   = 0.05;
 
   public:
