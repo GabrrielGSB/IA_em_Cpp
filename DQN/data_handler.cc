@@ -83,7 +83,7 @@ uint8_t header[2];
 				exit(1);
 			}		
 		}
-		prinf("A leitura e salvamento da %lu label foi um sucesso.\n", lista_de_dados->size());
+		prinf("A leitura e salvamento da label foi um sucesso.\n");
 	} else 
 	{
 		prinf("Arquivo não encontrado!!!\n");
@@ -144,10 +144,49 @@ void data_handler::dividir_dados()
 	printf("Tamanho dos dados de teste %lu.\n",       dados_de_teste);
 	printf("Tamanho dos dados de validação %lu.\n",   dados_de_validação);
 }
-void data_handler::contar_classes();
+void data_handler::contar_classes()
+{
+	int count = 0;
+	for (unsigned i = 0; i < lista_de_dados->size(); i++)
+	{
+		if(class_map.find(lista_de_dados->(i)->obter_label()) == class_map.end())
+		{
+			class_map[lista_de_dados->at(i)->obter_label()] = count;
+			lista_de_dados->at(i)->definir_label_numerada(count);
+			count++;
+		}
+	}
+	num_classes = count;
+	printf("Foram obtidicas %d classes únicas.\n", num_classes);
+}
 
-uint32_t data_handler::converta_para_pequeno_endian(const unsigned char* bytes);
+uint32_t data_handler::converta_para_pequeno_endian(const unsigned char* bytes)
+{
+	return(uint32_t) ((byte[0] << 24) |
+										(byte[1] << 16) |
+										(byte[2] << 8 ) |
+										(byte[3]));
+}
   
-vector<data *> * data_handler::obter_dados_de_treinamento();	
-vector<data *> * data_handler::obter_dados_de_teste();
-vector<data *> * data_handler::obter_dados_de_validacao();
+vector<data *> * data_handler::obter_dados_de_treinamento()
+{
+	return dados_de_treinamento;
+}
+
+vector<data *> * data_handler::obter_dados_de_teste()
+{
+	return dados_de_teste;
+}
+vector<data *> * data_handler::obter_dados_de_validacao()
+{
+	return dados_de_validacao;
+}
+
+int main()
+{
+	data_handler *dh = new data_handler();
+	dh->ler_vetor_de_recursos("../NOME_DO_ARQUIVO");
+	dh->ler_labels_de_recursos("../NOME_DO_ARQUIVO");
+	dh->dividir_dados();
+	dh->contar_classes();
+}
