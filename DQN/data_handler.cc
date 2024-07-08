@@ -57,13 +57,13 @@ void data_handler::ler_vetor_de_recursos(string path)
 }
 void data_handler::ler_labels_de_recursos(string path)
 {
-uint8_t header[2];
-	unsigned char bytes[2];
+	uint8_t header[2];
+	unsigned char bytes[4];
 	FILE *f = fopen(path.c_str(), "r");
 	
 	if(f)
 	{
-		for(int i=0;i<2;i++)
+		for(int i = 0; i < 2; i++)
 		{
 			if(fread(bytes, sizeof(bytes), 1, f))
 			{
@@ -71,7 +71,7 @@ uint8_t header[2];
 			}
 		}
 		printf("Termino da obtenção da label do cabeçalho do arquivo.\n");
-		for(int i=0;i<header[1];i++)
+		for(int i = 0; i < header[1] ; i++)
 		{	
 			uint8_t elemento[1];
 			if(fread(elemento, sizeof(elemento, 1, f)))
@@ -185,8 +185,8 @@ vector<data *> * data_handler::obter_dados_de_validacao()
 int main()
 {
 	data_handler *dh = new data_handler();
-	dh->ler_vetor_de_recursos("../NOME_DO_ARQUIVO");
-	dh->ler_labels_de_recursos("../NOME_DO_ARQUIVO");
+	dh->ler_vetor_de_recursos("./NOME_DO_ARQUIVO");
+	dh->ler_labels_de_recursos("./NOME_DO_ARQUIVO");
 	dh->dividir_dados();
 	dh->contar_classes();
 }
