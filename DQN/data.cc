@@ -1,53 +1,30 @@
 #include "data.hpp"
 using namespace std;
 
-data::data()
-{
-	vetor_de_recursos = new vector<uint8_t>;
-}
+// vec == vetor; rec == recurso; pont == ponteiro
 
-data::~data()
-{
-	
-}
+data::data() { vec_de_rec = new vector<uint8_t>; }
 
-void data::definir_vetor_de_recursos(vector<uint8_t> *vect)
-{
-  vetor_de_recursos = vect;
-}
+data::~data(){	}
 
-void data::incluir_no_vetor_de_recursos(uint8_t val)
-{
-	vetor_de_recursos->push_back(val); 
-}
 
-void data::definir_label(uint8_t val)
-{
-	label = val;
-}
+void data::def_pont_para_vec_de_rec(vector<uint8_t> * vect) { vec_de_rec = vect; }
 
-void data::definir_label_enumerada(int val)
-{
-	enum_label = val;
-}
+// O operador "->" é usado para acessar membros (como métodos, "push_back", ou atributos) de um objeto, "vector", ...
+// quando você tem um ponteiro para esse objeto.
+// O método "push_back()" é uma função membro da classe "std::vector" que adiciona um novo elemento ao final do vetor.
 
-int data::obter_tamanho_do_vetor_de_recursos()
-{
-	return vetor_de_recursos->size();
-}
+void data::incluir_no_vec_de_rec(uint8_t val) { vec_de_rec -> push_back(val); }
 
-uint8_t data::obter_label()
-{
-	return label;
-}
+void data::definir_label(uint8_t val) { label = val; }
 
-uint8_t data::obter_enum_label()
-{
-	return enum_label;
-}
+void data::definir_enum_label(int val) { enum_label = val; }
 
-vector<uint8_t> * data::obter_vetor_de_recursos()
-{
-	return vetor_de_recursos;
-}
+int data::obter_tamanho_do_vec_de_rec() {return vec_de_rec -> size();}
+
+uint8_t data::obter_label() { return label; }
+
+uint8_t data::obter_enum_label() { return enum_label; }
+
+vector<uint8_t> * data::obter_vetor_de_recursos() { return vetor_de_recursos; }
 
