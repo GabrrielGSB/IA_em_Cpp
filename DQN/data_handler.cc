@@ -3,53 +3,56 @@ using namespace std;
   
 data_handler::data_handler()
 {
-	lista_de_dados 			 = new vector<data *>;
-	dados_de_teste       = new vector<data *>;
-	dados_de_treinamento = new vector<data *>;
-  dados_de_validacao   = new vector<data *>; 
-};
+	// Essa linha aloca dinamicamente um novo vetor que será usado para armazenar ponteiros...
+	// para objetos da classe "data". O ponteiro para esse vetor é então atribuído à variável "lista_de_dados".
+	lista_de_dados 	     = new vector<data*>; // inicializa as variáveis definidas no arquivo "hpp".
+	dados_de_teste       = new vector<data*>; // Aloca espaço na memória que pode ser expandido e contraído dinamicamente.
+	dados_de_treinamento = new vector<data*>;
+    dados_de_validacao   = new vector<data*>; 
+}
 
-data_handler::~data_handler()
+data_handler::~data_handler(){};
+
+void data_handler::ler_vec_de_rec(string path)
 {
-
-};
-
-void data_handler::ler_vetor_de_recursos(string path)
-{
-	uint8_t header[4];
+	uint32_t header[4]; // guarda o "magic number", "numero de imagens", "numero de linhas" e "numero de colunas" do arquivo a ser lido.
 	unsigned char bytes[4];
-	FILE *f = fopen(path.c_str(), "r");
+	// path.c_str(): Se path for uma variável do tipo std::string (como é comum em C++), o método c_str() converte a "std::string"...
+	// para um array de caracteres (const char*) que pode ser passado para funções da biblioteca C, como fopen.
+	FILE *f = fopen(path.c_str(), "r"); // "r" arquivo aberto no modo de leitura, não pode ser modificado.
 	
-	if(f)
+	if(f) // checa se o arquivo conseguiu ser aberto e lido.
 	{
-		for(int i=0;i<4;i++)
+		for(int i = 0; i < 4; i++)
 		{
 			if(fread(bytes, sizeof(bytes), 1, f))
 			{
 				header[i] = converta_para_pequeno_indian(bytes);			
-			};
-		};
-		printf("Termino da obtenção do cabeçalho do arquivo de entrada.\n");
-		int tamanho_da_imagem = header[2]*header[3];
-		for(int i=0;i<header[1];i++)
+			}
+		}
+
+		printf("Termino da obtenção do cabeçalho do arquivo.\n");
+		int tamanho_da_imagem = header[2]*header[3]; // produto do número de linhas pelo número de colunas em pixels.
+
+		for(int i = 0; i < header[1]; i++) // iteração sobre o num de imagens
 		{
-			data *d = new data();
+			data *d = new data(); // alocando espaço na memória para um objeto da classe "data" e referindo um ponteiro para ele.
 			uint8_t elemento[1];
-			for(int j=0;j<tamanho_da_imagem;j++)
+
+			for(int j = 0; j < tamanho_da_imagem; j++) // itera sobre o tamanho da imagem para ler pixel por pixel
 			{
-				if(fread(elemento, sizeof(elemento, 1, f)))
-				{
-					d->incluir_no_vetor_de_recursos(elemento[0]);
-				}	else 
+				if(fread(elemento, sizeof(elemento), 1, f)) {d -> incluir_no_vec_de_rec(elemento[0]);} // lê um pixel no arquivo
+				else 
 				{
 					printf("Erro na leitura do arquivo!!!\n");
 					exit(1);
 				}		
 			}
-		  lista_de_dados->push_back(d);
+		  	lista_de_dados -> push_back(d);
 		}
-		prinf("A leitura e salvamento dos %lu vetores de recurso foi um sucesso.\n", lista_de_dados->size());
-	} else 
+		prinf("A leitura e salvamento dos %lu vetores de recurso foi um sucesso.\n", lista_de_dados -> size());
+	} 
+	else 
 	{
 		prinf("Arquivo não encontrado!!!\n");
 		exit(1);
