@@ -60,8 +60,8 @@ void data_handler::ler_vec_de_rec(string path)
 }
 void data_handler::ler_labels_de_recursos(string path)
 {
-	uint8_t header[2];
-	unsigned char bytes[4];
+	uint32_t header[2]; //Magic num / Num imgs
+	unsigned char bytes[2];
 	FILE *f = fopen(path.c_str(), "r");
 	
 	if(f)
@@ -70,7 +70,7 @@ void data_handler::ler_labels_de_recursos(string path)
 		{
 			if(fread(bytes, sizeof(bytes), 1, f))
 			{
-				header[i] = converta_para_pequeno_indian(bytes);			
+				header[i] = conv_p_little_endian(bytes);			
 			}
 		}
 		printf("Termino da obtenção da label do cabeçalho do arquivo.\n");
@@ -79,15 +79,19 @@ void data_handler::ler_labels_de_recursos(string path)
 			uint8_t elemento[1];
 			if(fread(elemento, sizeof(elemento, 1, f)))
 			{
-				vetor_de_dados->at(i)->definir_label(elemento[0]);
-			}	else 
+				//A função at(i) é um método da classe std::vector que retorna o elemento na posição i do vetor
+				//Como "vetor_de_dados" é um vetor de ponteiros at(i) vai pegar um ponteiro e aplicar a função "definir_label"
+				vetor_de_dados -> at(i) -> definir_label(elemento[0]);
+			}	
+			else 
 			{
 				printf("Erro na leitura do arquivo!!!\n");
 				exit(1);
 			}		
 		}
 		prinf("A leitura e salvamento da label foi um sucesso.\n");
-	} else 
+	} 
+	else 
 	{
 		prinf("Arquivo não encontrado!!!\n");
 		exit(1);
@@ -102,43 +106,44 @@ void data_handler::dividir_dados()
 	int tamanho_da_validacao   = vetor_de_dados->size() * PORCENTAGEM_DE_VALIDACAO
 
 	// Dados de Treinamento
-
 	int count = 0;
 	while(count < tamanho_do_treinamento)
 	{
-		int rand_indice = rand() % vetor_de_dados	->size();
-		if(indices_usados.find(rand_indice) == indices_usados.end())
-		{
-			dados_de_treinamento->push_back(vetor_de_dados->at(rand_indice));
-			indices_usados.insert(rand_indice);
+		//Gera um índice aleatório entre 0 e o tamanho total de vetor_de_dados menos um. 
+		//Isso garante que o índice seja válido para acessar um elemento no vetor de dados.
+		int indice_aleatorio = rand() % vetor_de_dados->size();
+
+		if(indices_usados.find(indice_aleatorio) == indices_usados.end()) // Aqui o .end() não aponta para elemento válido, 
+		{         														  // apenas indica fim do vetor
+	        // Insere  o elemento indicado por "indice_aleatorio" do "vetor_de_dados" em "dados_de_treinamento"
+			dados_de_treinamento -> push_back(vetor_de_dados -> at(indice_aleatorio));
+			indices_usados.insert(indice_aleatorio);
 			count++;	
 		}
 	}
 
 	// Dados de Teste
-
 	int count = 0;
 	while(count < tamanho_do_teste)
 	{
-		int rand_indice = rand() % vetor_de_dados	->size();
-		if(indices_usados.find(rand_indice) == indices_usados.end())
+		int indice_aleatorio = rand() % vetor_de_dados->size();
+		if(indices_usados.find(indice_aleatorio) == indices_usados.end())
 		{
-			dados_de_teste->push_back(vetor_de_dados->at(rand_indice));
-			indices_usados.insert(rand_indice);
+			dados_de_teste -> push_back(vetor_de_dados -> at(indice_aleatorio));
+			indices_usados.insert(indice_aleatorio);
 			count++;
 		}
 	}
 
 	// Dados de Validação
-
 	int count = 0;
 	while(count < tamanho_da_validacao)
 	{
-		int rand_indice = rand() % vetor_de_dados	->size();
-		if(indices_usados.find(rand_indice) == indices_usados.end())
+		int indice_aleatorio = rand() % vetor_de_dados	->size();
+		if(indices_usados.find(indice_aleatorio) == indices_usados.end())
 		{
-			dados_de_validacao->push_back(vetor_de_dados->at(rand_indice));
-			indices_usados.insert(rand_indice);
+			dados_de_validacao -> push_back(vetor_de_dados -> at(indice_aleatorio));
+			indices_usados.insert(indice_aleatorio);
 			count++;
 		}
 	}
@@ -154,8 +159,8 @@ void data_handler::contar_classes()
 	{
 		if(class_map.find(lista_de_dados->(i)->obter_label()) == class_map.end())
 		{
-			class_map[lista_de_dados->at(i)->obter_label()] = count;
-			lista_de_dados->at(i)->definir_label_numerada(count);
+			class_map[lista_de_dados -> at(i) -> obter_label()] = count;
+			lista_de_dados -> at(i) -> definir_label_numerada(count);
 			count++;
 		}
 	}
