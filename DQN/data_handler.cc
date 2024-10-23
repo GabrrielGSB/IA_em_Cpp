@@ -5,7 +5,7 @@ data_handler::data_handler()
 {
 	// Essa linha aloca dinamicamente um novo vetor que será usado para armazenar ponteiros...
 	// para objetos da classe "data". O ponteiro para esse vetor é então atribuído à variável "lista_de_dados".
-	lista_de_dados 	     = new vector<data*>; // inicializa as variáveis definidas no arquivo "hpp".
+	vetor_de_dados 	     = new vector<data*>; // inicializa as variáveis definidas no arquivo "hpp".
 	dados_de_teste       = new vector<data*>; // Aloca espaço na memória que pode ser expandido e contraído dinamicamente.
 	dados_de_treinamento = new vector<data*>;
     dados_de_validacao   = new vector<data*>; 
@@ -48,9 +48,9 @@ void data_handler::ler_vec_de_rec(string path)
 					exit(1);
 				}		
 			}
-		  	lista_de_dados -> push_back(d);
+		  	vetor_de_dados -> push_back(d);
 		}
-		prinf("A leitura e salvamento dos %lu vetores de recurso foi um sucesso.\n", lista_de_dados -> size());
+		prinf("A leitura e salvamento dos %lu vetores de recurso foi um sucesso.\n", vetor_de_dados -> size());
 	} 
 	else 
 	{
@@ -61,17 +61,14 @@ void data_handler::ler_vec_de_rec(string path)
 void data_handler::ler_labels_de_recursos(string path)
 {
 	uint32_t header[2]; //Magic num / Num imgs
-	unsigned char bytes[2];
+	unsigned char bytes[4];
 	FILE *f = fopen(path.c_str(), "r");
 	
 	if(f)
 	{
 		for(int i = 0; i < 2; i++)
 		{
-			if(fread(bytes, sizeof(bytes), 1, f))
-			{
-				header[i] = conv_p_little_endian(bytes);			
-			}
+			if(fread(bytes, sizeof(bytes), 1, f)) {header[i] = conv_p_little_endian(bytes);}
 		}
 		printf("Termino da obtenção da label do cabeçalho do arquivo.\n");
 		for(int i = 0; i < header[1] ; i++)
@@ -112,7 +109,7 @@ void data_handler::dividir_dados()
 		//Gera um índice aleatório entre 0 e o tamanho total de vetor_de_dados menos um. 
 		//Isso garante que o índice seja válido para acessar um elemento no vetor de dados.
 		int indice_aleatorio = rand() % vetor_de_dados->size();
-
+		//Procura "indice_aleatorio" em "indices_usados"
 		if(indices_usados.find(indice_aleatorio) == indices_usados.end()) // Aqui o .end() não aponta para elemento válido, 
 		{         														  // apenas indica fim do vetor
 	        // Insere  o elemento indicado por "indice_aleatorio" do "vetor_de_dados" em "dados_de_treinamento"
@@ -157,7 +154,7 @@ void data_handler::contar_classes()
 	int count = 0;
 	for (unsigned i = 0; i < lista_de_dados->size(); i++)
 	{
-		if(class_map.find(lista_de_dados->(i)->obter_label()) == class_map.end())
+		if(class_map.find(lista_de_dados->at(i)->obter_label()) == class_map.end())
 		{
 			class_map[lista_de_dados -> at(i) -> obter_label()] = count;
 			lista_de_dados -> at(i) -> definir_label_numerada(count);
@@ -168,32 +165,23 @@ void data_handler::contar_classes()
 	printf("Foram obtidicas %d classes únicas.\n", num_classes);
 }
 
-uint32_t data_handler::converta_para_pequeno_endian(const unsigned char* bytes)
+//Converte a organização dos bytes para pequeno endian, na qual o byte menos significativo vem primeiro na memória
+uint32_t data_handler::conv_p_little_endian(const unsigned char* bytes)
 {
 	return(uint32_t) ((byte[0] << 24) |
-										(byte[1] << 16) |
-										(byte[2] << 8 ) |
-										(byte[3]));
+					  (byte[1] << 16) |
+					  (byte[2] << 8 ) |
+					  (byte[3]));
 }
   
-vector<data *> * data_handler::obter_dados_de_treinamento()
-{
-	return dados_de_treinamento;
-}
-
-vector<data *> * data_handler::obter_dados_de_teste()
-{
-	return dados_de_teste;
-}
-vector<data *> * data_handler::obter_dados_de_validacao()
-{
-	return dados_de_validacao;
-}
+vector<data *> * data_handler::obter_dados_de_treinamento() {return dados_de_treinamento;}
+vector<data *> * data_handler::obter_dados_de_teste()       {return dados_de_teste;}
+vector<data *> * data_handler::obter_dados_de_validacao()   {return dados_de_validacao;}
 
 int main()
 {
 	data_handler *dh = new data_handler();
-	dh->ler_vetor_de_recursos("./NOME_DO_ARQUIVO");
+	dh->ler_vec_de_rec("./NOME_DO_ARQUIVO");
 	dh->ler_labels_de_recursos("./NOME_DO_ARQUIVO");
 	dh->dividir_dados();
 	dh->contar_classes();
