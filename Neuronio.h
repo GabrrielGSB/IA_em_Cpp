@@ -1,37 +1,25 @@
-#ifndef __MLP_HPP
-#define __MLP_HPP
+#ifndef __NEURONIO_HPP
+#define __NEURONIO_HPP
 
-#include "neuronio.hpp"
 using namespace std;
+#include <vector>
+#include <string>
 
-class MLP
+class Neuronio
 {
 	public:
-		int numEntradas, numSaidas;
-		vector<int> camadasOcultas; 
-		vector<vector<float>> entradas;
-		vector<float> saidas, saidasDesejadas;
-		vector<vector<Neuronio>> rede;
-		float erroQuad, erroQuadMed;
-		int episodios;
+		vector<float> entrada;
+		vector<float> pesos;
+		float saida, gradienteLocal;
+		int tamEntrada, tamSaida;
+		string funcAtiv;
 		
-		MLP(int numEnt, int numSai, vector<int> camOcu);
+		Neuronio(int tamEntrada, int tamSaida, vector<float> entrada, string funcAtiv);
 		
-		void feedFoward();
-		void backPropagation();
-		void calcularErroQuad();
-		void calcularErroQuadMed();
-		void definirEntrada(vector<float>);
-		void definirSaidasDesejadas(vector<float>);
-		void definirCamOcultas(vector<int>);
-		void atualizarPesos();
-	    void definirEpisodios();
-	    //void salvarPesos(); 
-	    //void obterInformacoesRede();
-	    void treinar();
-	    
-			
-			
+		vector<float> obterPesos();
+		void inicializarPesos();	
+		void aplicarEntrada();
+		//void mudarAtivacao();
 };
 
 #endif
