@@ -7,21 +7,19 @@
 
 using namespace std;
 
-class Perceptron
+class Perceptron 
 {
-    private:
+    public:
         Neuronio n;
 
-    public:
         int    tamEntrada;
         int    episodios;
         bool   existeErro;
         string funcAtiv;
-        // vector<float> saidaDesejada;
-
+        
         Perceptron(int tamEntrada, string funcAtiv);
 
-        void atualizarPesos(float taxaAprendizado, vector<float> entrada, vector<float> saidaDesejada);
+        void atualizarPesos(float taxaAprendizado, vector<float> entrada, float saidaDesejada);
         void treinar(float taxaAprendizado, vector<vector<float>> entradas, vector<float> saidaDesejada);
         void mostrarResultados(vector<vector<float>> entradas);
 };
