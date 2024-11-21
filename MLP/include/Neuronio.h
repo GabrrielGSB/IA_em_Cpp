@@ -17,7 +17,7 @@ class Neuronio
 
 		Neuronio(int tamEntrada, string funcAtiv);
 		
-		void inicializarPesos();	
+		void inicializarPesos(string mode);	
 		void definirTaxaAprendizado(float TaxaAprendizado);
 		void aplicarFuncAtivacao(float saida, string funcAtiv);
 		void aplicarEntrada(vector<float> input, string funcAtiv);
