@@ -52,35 +52,13 @@ void  Neuronio::aplicarEntrada(vector<float> entrada, string funcAtiv)
 {
 	U = {};
 	entrada.insert(entrada.begin(), -1.0);
-	// printf("\n");
+
 	for (int i = 0; i < entrada.size(); i++)
 	{ 
 		U.push_back(entrada[i] * pesos[i]);
 	}
 
 	saida = accumulate(U.begin(), U.end(), 0.0);
-	// printf("%f \n", saida);
 	aplicarFuncAtivacao(saida, funcAtiv);
 }
 
-
-// int main()
-// {
-// 	Neuronio n(2, "degrau");
-// 	n.inicializarPesos("random");
-// 	n.aplicarEntrada({1,1}, "degrau");
-// 	for (float c : {1,1}) printf("%.10f\n", c);
-// 	printf("\n");
-// 	for (float a : n.pesos) printf("%.10f\n", a);
-// 	printf("\n");
-// 	for (float b : n.U) printf("%.10f\n", b);
-// 	printf("\n");
-// 	printf("%.4f", n.saida);
-// 	return 0;			
-// }					
-
-
-					
-//vector<float> obterPesos();
-	
-//void mudarAtivacao();

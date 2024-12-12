@@ -5,21 +5,13 @@ Perceptron::Perceptron(int tamEntrada, string funcAtiv="degrau") :
 
 void Perceptron::atualizarPesos(float taxaAprendizado, vector<float> entrada, float saidaDesejada)
 {
-    printf("\n");
     n.definirTaxaAprendizado(taxaAprendizado);
     entrada.insert(entrada.begin(), -1.0);
 
 
     for (int i = 0; i < n.pesos.size(); i++)
     {   
-        printf("velho peso %d: %.15f // ", i, n.pesos[i]);
         n.pesos[i] = n.pesos[i] + 0.1 * (saidaDesejada - n.saida) * entrada[i];
-        printf("novo peso %d: %.15f // ", i, n.pesos[i]);
-        printf("\n");
-        printf("Saida desejada: %.3f // ", saidaDesejada);
-        printf("Saida: %.3f // ", n.saida);
-        printf("Entrada: %.3f", entrada[i]);
-        printf("\n");
     }
     existeErro = true;
 }
@@ -27,13 +19,10 @@ void Perceptron::atualizarPesos(float taxaAprendizado, vector<float> entrada, fl
 void Perceptron::treinar(float taxaAprendizado, vector<vector<float>> entradas, vector<float> saidaDesejada)
 {
     n.inicializarPesos("random");
-
     n.definirTaxaAprendizado(taxaAprendizado);
-
     do
     {
         existeErro = false;
-
         for (int i = 0; i < entradas.size(); i++)
         {
             n.aplicarEntrada(entradas[i], "degrau");
@@ -60,8 +49,20 @@ void Perceptron::mostrarResultados(vector<vector<float>> entradas)
 
 int main()
 {
-    vector<vector<float>> entradas = {{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.0}, {1.0, 1.0}};
-    vector<float> saidasDesejadas  = {0.0, 0.0, 0.0, 1.0};
+    // vector<vector<float>> entradas = {{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.0}, {1.0, 1.0}};
+    // vector<float> saidasDesejadas  = {0.0, 0.0, 0.0, 1.0};
+
+    // vector<vector<float>> entradas = {{1.0, 2.0}, {3.0, 4.0}, {-1.0, -2.0}, {2.0, -1.0},
+    //                                   {0.0, 3,0}, {-2.0, 1.0}, {4.0, -2.0}, {-3.0, -1.0}, 
+    //                                   {2.0, 2.0}};
+    // vector<float> saidasDesejadas  = {0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0 , 1.0, 0.0};
+
+    vector<vector<float>> entradas = {{-0.6508, 0.1097, 4.0009}, 
+                                      {-1.4492, 0.8896, 4.4005}, 
+                                      { 2.0850, 0.6876, 12.0710}, 
+                                      { 0.2626, 1.1476, 7.7985},
+                                      { 0.6418, 1.0234, 7.0427}};
+    vector<float> saidasDesejadas  = {0.0, 0.0, 0.0, 1.0, 1.0};
 
     Perceptron p(2);
 
