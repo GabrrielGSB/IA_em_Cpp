@@ -1,31 +1,42 @@
 
 #include "../include/Neuronio.h"
 #include "../include/Perceptron.h"
+#include "../include/myFuncoes.h"
 
 int main()
 {
-    // vector<vector<float>> entradas = {{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.0}, {1.0, 1.0}};
-    // vector<float> saidasDesejadas  = {0.0, 0.0, 0.0, 1.0};
+    Perceptron p(10000, 0.01, 3, "degrau");
 
-    // vector<vector<float>> entradas = {{1.0, 2.0}, {3.0, 4.0}, {-1.0, -2.0}, {2.0, -1.0},
-    //                                   {0.0, 3,0}, {-2.0, 1.0}, {4.0, -2.0}, {-3.0, -1.0}, 
-    //                                   {2.0, 2.0}};
-    // vector<float> saidasDesejadas  = {0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0 , 1.0, 0.0};
+    const char* caminhoDados = getenv("DADOS_TREINAMENTO");
 
-    vector<vector<float>> entradas = {{-0.6508, 0.1097, 4.0009}, 
-                                      {-1.4492, 0.8896, 4.4005}, 
-                                      { 2.0850, 0.6876, 12.0710}, 
-                                      { 0.2626, 1.1476, 7.7985},
-                                      { 0.6418, 1.0234, 7.0427}};
-    vector<float> saidasDesejadas  = {0.0, 0.0, 0.0, 1.0, 1.0};
+    if (caminhoDados == nullptr) {
+        printf("\nA variavel de ambiente DADOS_TREINAMENTO nao esta configurada!\n");
+        return 1;
+    }
 
-    Perceptron p(1000, 0.1, 2, "degrau");
+    string caminhoDadosTreinamento = string(caminhoDados) + "/dados_treinamento.csv";
+    string caminhoDadosValidacao   = string(caminhoDados) + "/dados_validacao.csv";
+    
+    cout << "\nCaminho para os dados de treinamento: " << caminhoDadosTreinamento << endl;
+    cout << "Caminho para os dados de validacao: "   << caminhoDadosValidacao   << endl;
 
-    p.treinar(entradas, saidasDesejadas);
+    //Treinamento------------------------------------------------------------
+    vector<vector<float>> dadosEntrada, dadosEntradaValid;
+    vector<float>         saidasDesejadas, saidasDesejadasValid;
+    lerCSV(caminhoDadosTreinamento, 3, dadosEntrada, saidasDesejadas);
 
-    p.mostrarResultados(entradas);
+    p.treinar(dadosEntrada, saidasDesejadas);
 
-    printf("\nTreinamento terminou! em %d", p.numEpisodiosTotais);
+    p.mostrarResultados(dadosEntrada, saidasDesejadas);
+    p.mostrarPesos();
+
+    printf("\nTreinamento terminou! em %d episodios", p.numEpisodiosAtual);
+    //-----------------------------------------------------------------------
+
+    //Validação--------------------------------------------------------------
+    lerCSV(caminhoDadosValidacao, 3, dadosEntradaValid, saidasDesejadasValid);
+    p.mostrarResultados(dadosEntradaValid, saidasDesejadasValid);
+    //-----------------------------------------------------------------------
 
     return 0;
 }

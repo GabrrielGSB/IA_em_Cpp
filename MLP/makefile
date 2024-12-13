@@ -1,29 +1,51 @@
+DADOS_TREINAMENTO := C:/Users/MIroxo/Desktop/IA_em_Cpp/MLP/Dados
+DADOS_VALIDACAO   := C:/Users/MIroxo/Desktop/IA_em_Cpp/MLP/Dados
 # Nome do compilador
 CXX = g++
 
-# Flags de compilação (opcionalmente, adicione -g para depuração ou -O2 para otimização)
-# CXXFLAGS = 
+# Flags de compilação
+CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude
 
-# Arquivo executável final
-TARGET = main
+# Diretórios
+SRC_DIR = src
+INCLUDE_DIR = include
+OBJ_DIR = obj
+BIN_DIR = bin
 
-# Lista de arquivos fonte
-SRCS = mainPerceptron.cpp Neuronio.cpp Perceptron.ccp
+# Nome do executável
+TARGET = $(BIN_DIR)/mainPerceptron
 
-# Gera os objetos substituindo a extensão .cpp/.ccp por .o
-OBJS = $(SRCS:.cpp=.o)
+# Arquivos fonte e objetos
+SRCS = $(wildcard $(SRC_DIR)/*.cpp)
+OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
-# Regra padrão: compila tudo
+# Regra padrão
 all: $(TARGET)
 
 # Regra para criar o executável
 $(TARGET): $(OBJS)
-	$(CXX) -o $@ $(OBJS)
+	@mkdir -p $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+	@echo "Executavel criado em: $(TARGET)"
 
-# Regra genérica para criar os arquivos objeto
-%.o: %.cpp
+# Regra para criar os objetos
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Limpeza dos arquivos gerados
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	@echo "Arquivos temporarios removidos."
+
+# Limpeza completa
+clean_all: clean
+	rm -f $(TARGET)
+	@echo "Tudo limpo!"
+
+# Executar o programa
+run: $(TARGET)
+	DADOS_VALIDACAO=$(DADOS_VALIDACAO) DADOS_TREINAMENTO=$(DADOS_TREINAMENTO) ./$(TARGET)
+
+# Regra para garantir que 'clean' seja chamada antes de compilar
+rebuild: clean all

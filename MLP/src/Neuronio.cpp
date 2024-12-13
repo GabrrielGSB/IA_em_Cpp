@@ -1,6 +1,6 @@
 #include "../include/Neuronio.h"
 #include <random>
-#include "myFuncoes.cpp"
+#include "../include/myFuncoes.h"
 
 Neuronio::Neuronio(float taxaAprendizado, int tamEntrada, string funcAtiv) : 
 				   taxaAprendizado(taxaAprendizado),

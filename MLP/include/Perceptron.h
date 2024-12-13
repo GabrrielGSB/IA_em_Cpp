@@ -4,9 +4,6 @@
 #include "Neuronio.h"
 #include <string>
 #include <vector>
-#include <fstream>
-#include <sstream>
-#include <iostream>
 #include <cctype>
 #include <algorithm>
 
@@ -23,10 +20,13 @@ class Perceptron
         int    numEpisodiosAtual, 
                numEpisodiosTotais;
         bool   existeErro;
+        vector<float> erros;
         
         void atualizarPesos(vector<float> dadosEntrada, float saidaDesejada);
         void treinar(vector<vector<float>> entradas, vector<float> saidaDesejada);
-        void mostrarResultados(vector<vector<float>> entradas);
+        void treinar(vector<vector<float>> entradas, vector<float> saidaDesejada, string info);
+        void mostrarResultados(vector<vector<float>> entradas, vector<float> saidasDesejadas);
+        void mostrarPesos();
 };
 
 #endif

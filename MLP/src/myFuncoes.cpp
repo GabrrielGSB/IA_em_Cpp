@@ -1,3 +1,4 @@
+#include "../include/myFuncoes.h"
 #include "../include/Perceptron.h"
 
 float gerarNumAleatorio()

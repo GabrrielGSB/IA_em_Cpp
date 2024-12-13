@@ -59,6 +59,7 @@
   "files.associations": {
     "vector": "cpp",
     "numeric": "cpp",
-    "string": "cpp"
+    "string": "cpp",
+    "ostream": "cpp"
   }
 }

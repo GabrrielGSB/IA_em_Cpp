@@ -1,17 +1,22 @@
 #include "../include/Perceptron.h"
-#include "myFuncoes.cpp"
+#include "../include/myFuncoes.h"
 
-Perceptron::Perceptron(int numEpisodiosTotais, double taxaAprendizado, int tamEntrada=2, string funcAtiv="degrau") : 
+Perceptron::Perceptron(int numEpisodiosTotais, double taxaAprendizado, int tamEntrada, string funcAtiv="degrau") : 
                        numEpisodiosTotais(numEpisodiosTotais),
                        n(taxaAprendizado, tamEntrada, funcAtiv), 
                        numEpisodiosAtual(0), 
                        existeErro(false) {}
 
-void Perceptron::atualizarPesos(vector<float> entrada, float saidaDesejada)
+void Perceptron::atualizarPesos(vector<float> dadoEntrada, float saidaDesejada)
 {
-    n.definirSinalBias(entrada);
-    for (int i = 0; i < n.pesos.size(); i++) n.pesos[i] = n.pesos[i] + n.taxaAprendizado * (saidaDesejada - n.saida) * entrada[i];
-    this->existeErro = true;
+    n.definirSinalBias(dadoEntrada);
+    float erro = saidaDesejada - n.saida; 
+    if (erro != 0) 
+    { 
+        for (int i = 0; i < n.pesos.size(); i++) n.pesos[i] += n.taxaAprendizado * erro * dadoEntrada[i]; // Atualização dos pesos
+        this->existeErro = true;
+    } 
+    else this->existeErro = false;
 }
 
 void Perceptron::treinar(vector<vector<float>> entradas, vector<float> saidaDesejada)
@@ -31,48 +36,80 @@ void Perceptron::treinar(vector<vector<float>> entradas, vector<float> saidaDese
 
         if (this->numEpisodiosAtual >= this->numEpisodiosTotais) break;
     } while (this->existeErro == true);
-    
+    printf("\nTreinamento concluido!\n");
 }
 
-void Perceptron::mostrarResultados(vector<vector<float>> dadosEntrada)
+void Perceptron::treinar(vector<vector<float>> entradas, vector<float> saidaDesejada, string info)
 {
+    n.inicializarPesos("random");
+
+    int numAcertos = 0;
+    int numErros = 0;
+
+    do
+    {
+        this->existeErro = false;
+        float erroTotal = 0.0;  
+        
+        for (int i = 0; i < entradas.size(); i++)
+        {
+            n.aplicarEntrada(entradas[i]);
+            float erro = saidaDesejada[i] - n.saida;
+            erroTotal += fabs(erro);
+
+            if (erro != 0)
+            {
+                numErros++;
+                atualizarPesos(entradas[i], saidaDesejada[i]);
+            }
+            else numAcertos++;   
+        }
+
+        if (info == "info")
+        {
+        printf("Erro total na epoca %d: %.1f (", numEpisodiosAtual, erroTotal);
+        printf("Acertos: %d | Erros: %d)\n", numAcertos, numErros);
+        }
+
+        numErros = 0, numAcertos = 0;
+        this->numEpisodiosAtual++;
+
+    } while (this->existeErro == true);
+    printf("\nTreinamento concluido!");
+}
+
+
+void Perceptron::mostrarResultados(vector<vector<float>> dadosEntrada, vector<float> saidasDesejadas)
+{
+    int acertos = 0;
+    int erros = 0;
+
+    printf("\nResultados do treinamento:\n");
+
     for (int i = 0; i < dadosEntrada.size(); i++)
     {
         n.aplicarEntrada(dadosEntrada[i]);
-        printf("\n");
-        printf("%.1f ", n.saida);
+
+        if (n.saida == saidasDesejadas[i]) acertos++;
+        else                               erros++;
+        
+    }
+    printf("Numero de acertos: %d\n", acertos);
+    printf("Numero de erros: %d\n", erros);
+    printf("Precisao = %.3f \%\n", ((float)acertos / dadosEntrada.size() * 100));
+}
+
+
+void Perceptron::mostrarPesos()
+{
+    uint8_t cont = 0;
+
+    printf("\nPesos apos o treinamento:\n");
+    for (float peso : n.pesos)
+    {
+        if (cont == 0) printf("bias -> %.3f\n", peso);
+        else printf("w%d -> %.3f\n", cont, peso);
+        cont++;
     }
 }
 
-// int main()
-// {
-//     // vector<vector<float>> entradas = {{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.0}, {1.0, 1.0}};
-//     // vector<float> saidasDesejadas  = {0.0, 0.0, 0.0, 1.0};
-//     // vector<vector<float>> entradas = {{1.0, 2.0}, {3.0, 4.0}, {-1.0, -2.0}, {2.0, -1.0},
-//     //                                   {0.0, 3,0}, {-2.0, 1.0}, {4.0, -2.0}, {-3.0, -1.0}, 
-//     //                                   {2.0, 2.0}};
-//     // vector<float> saidasDesejadas  = {0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0 , 1.0, 0.0};
-//     vector<vector<float>> entradas = {{-0.6508, 0.1097, 4.0009}, 
-//                                       {-1.4492, 0.8896, 4.4005}, 
-//                                       { 2.0850, 0.6876, 12.0710}, 
-//                                       { 0.2626, 1.1476, 7.7985},
-//                                       { 0.6418, 1.0234, 7.0427}};
-//     vector<float> saidasDesejadas  = {0.0, 0.0, 0.0, 1.0, 1.0};
-//    Perceptron p(1000, 0.1, 2);
-//     p.treinar(entradas, saidasDesejadas);
-//     p.mostrarResultados(entradas);
-//     printf("\nTreinamento terminou! em %d", p.numEpisodiosTotais);
-//     return 0;
-// }
-// int main()
-// {
-//     Perceptron p(5000, 0.01, 2);
-//     vector<vector<float>> entradas;
-//     vector<float>         saidasDesejadas;
-//     lerCSV("../DADOS/dados_treinamento.csv", 3, entradas, saidasDesejadas);
-//     // for (float i : saidasDesejadas) printf("%.1f", i);
-//     p.treinar(entradas, saidasDesejadas);
-//     p.mostrarResultados(entradas);
-//     printf("\nTreinamento terminou! em %d", p.numEpisodios);
-//     return 0;
-// }
