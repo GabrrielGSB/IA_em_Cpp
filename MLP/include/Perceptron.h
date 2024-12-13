@@ -4,23 +4,31 @@
 #include "Neuronio.h"
 #include <string>
 #include <vector>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <cctype>
+#include <algorithm>
 
 using namespace std;
 
 class Perceptron 
 {
-    public:
+    private:
         Neuronio n;
 
-        int    tamEntrada;
-        int    episodios;
-        bool   existeErro;
-        string funcAtiv;
-        
-        Perceptron(int tamEntrada, string funcAtiv);
+    public:
+        Perceptron(int    numEpisodiosTotais, 
+                   float  taxaAprendizado, 
+                   int    tamEntrada, 
+                   string funcAtiv);
 
-        void atualizarPesos(float taxaAprendizado, vector<float> entrada, float saidaDesejada);
-        void treinar(float taxaAprendizado, vector<vector<float>> entradas, vector<float> saidaDesejada);
+        int    numEpisodiosAtual, 
+               numEpisodiosTotais;
+        bool   existeErro;
+        
+        void atualizarPesos(vector<float> dadosEntrada, float saidaDesejada);
+        void treinar(vector<vector<float>> entradas, vector<float> saidaDesejada);
         void mostrarResultados(vector<vector<float>> entradas);
 };
 

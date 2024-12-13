@@ -1,47 +1,44 @@
 #include "../include/Perceptron.h"
+#include "../myFuncoes.cpp"
 
-Perceptron::Perceptron(int tamEntrada, string funcAtiv="degrau") : 
-                       n(tamEntrada, funcAtiv), tamEntrada(tamEntrada), episodios(0), existeErro(false) {}
+Perceptron::Perceptron(int numEpisodiosTotais, float taxaAprendizado, int tamEntrada=2, string funcAtiv="degrau") : 
+                       numEpisodiosTotais(numEpisodiosTotais),
+                       n(taxaAprendizado, tamEntrada, funcAtiv), 
+                       numEpisodiosAtual(0), 
+                       existeErro(false) {}
 
-void Perceptron::atualizarPesos(float taxaAprendizado, vector<float> entrada, float saidaDesejada)
+void Perceptron::atualizarPesos(vector<float> entrada, float saidaDesejada)
 {
-    n.definirTaxaAprendizado(taxaAprendizado);
-    entrada.insert(entrada.begin(), -1.0);
-
-
-    for (int i = 0; i < n.pesos.size(); i++)
-    {   
-        n.pesos[i] = n.pesos[i] + 0.1 * (saidaDesejada - n.saida) * entrada[i];
-    }
-    existeErro = true;
+    n.definirSinalBias(entrada);
+    for (int i = 0; i < n.pesos.size(); i++) n.pesos[i] = n.pesos[i] + n.taxaAprendizado * (saidaDesejada - n.saida) * entrada[i];
+    this->existeErro = true;
 }
 
-void Perceptron::treinar(float taxaAprendizado, vector<vector<float>> entradas, vector<float> saidaDesejada)
+void Perceptron::treinar(vector<vector<float>> entradas, vector<float> saidaDesejada)
 {
     n.inicializarPesos("random");
-    n.definirTaxaAprendizado(taxaAprendizado);
+
     do
     {
-        existeErro = false;
+        this->existeErro = false;
+
         for (int i = 0; i < entradas.size(); i++)
         {
-            n.aplicarEntrada(entradas[i], "degrau");
-
-            if (n.saida != saidaDesejada[i]) 
-            {
-                atualizarPesos(taxaAprendizado, entradas[i], saidaDesejada[i]);   
-            }
+            n.aplicarEntrada(entradas[i]);
+            if (n.saida != saidaDesejada[i]) atualizarPesos(entradas[i], saidaDesejada[i]);   
         }
-        episodios++;
-    } while (existeErro == true);
+        this->numEpisodiosAtual++;
+
+        if (this->numEpisodiosAtual >= this->numEpisodiosTotais) break;
+    } while (this->existeErro == true);
     
 }
 
-void Perceptron::mostrarResultados(vector<vector<float>> entradas)
+void Perceptron::mostrarResultados(vector<vector<float>> dadosEntrada)
 {
-    for (int i = 0; i < entradas.size(); i++)
+    for (int i = 0; i < dadosEntrada.size(); i++)
     {
-        n.aplicarEntrada(entradas[i], "degrau");
+        n.aplicarEntrada(dadosEntrada[i]);
         printf("\n");
         printf("%.1f ", n.saida);
     }
@@ -74,3 +71,22 @@ int main()
 
     return 0;
 }
+
+// int main()
+// {
+//     Perceptron p(5000, 0.01, 2);
+
+//     vector<vector<float>> entradas;
+//     vector<float>         saidasDesejadas;
+
+//     lerCSV("../DADOS/dados_treinamento.csv", 3, entradas, saidasDesejadas);
+
+//     // for (float i : saidasDesejadas) printf("%.1f", i);
+
+//     p.treinar(entradas, saidasDesejadas);
+//     p.mostrarResultados(entradas);
+
+//     printf("\nTreinamento terminou! em %d", p.numEpisodios);
+
+//     return 0;
+// }

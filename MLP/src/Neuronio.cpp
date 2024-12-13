@@ -1,8 +1,11 @@
 #include "../include/Neuronio.h"
 #include <random>
+#include <../myFuncoes.cpp>
 
-Neuronio::Neuronio(int tamEntrada, string funcAtiv) : 
-				   tamEntrada(tamEntrada), funcAtiv(funcAtiv){}
+Neuronio::Neuronio(float taxaAprendizado, int tamEntrada, string funcAtiv) : 
+				   taxaAprendizado(taxaAprendizado),
+				   tamEntrada(tamEntrada), 
+				   funcAtiv(funcAtiv){}
 
 float gerarNumAleatorio(float min, float max)
 {
@@ -10,55 +13,46 @@ float gerarNumAleatorio(float min, float max)
     return min + aleatorio * (max - min);
 }
 		
-void  Neuronio::inicializarPesos(string mode)
+void  Neuronio::inicializarPesos(string modo)
 {
-	if (mode == "random")
+	if (modo == "random")
 	{
-		default_random_engine gerador;
-    	normal_distribution<float> distribuicao(0.0, 1.0);
-    
-    	for(int i = 0; i < tamEntrada + 1; i++ )
-    	{
-    		pesos.push_back(gerarNumAleatorio(0.0, 1.0));
-    	}
-		// for (float j : pesos) printf("%.2f", j);
+    	for(int i = 0; i < tamEntrada + 1; i++ ) this->pesos.push_back(gerarNumAleatorio());
 	}
-	else if (mode == "zero")
+	else if (modo == "zero")
 	{
-		for(int i = 0; i < tamEntrada + 1; i++ )
-    	{
-    		pesos.push_back(0);
-    	}
+		for(int i = 0; i < tamEntrada + 1; i++ ) this->pesos.push_back(0);
 	}
-	
-}	
-
-void  Neuronio::definirTaxaAprendizado(float taxaAprend)
-{
-	taxaAprendizado = taxaAprend;
 }
 
-float Neuronio::degrau(float u, string derivada="false") 
+void  Neuronio::definirTaxaAprendizado(float taxaAprendizado)
+{
+	this->taxaAprendizado = taxaAprendizado;
+}
+
+float Neuronio::degrau(float entrada) 
 { 
-	return u > 0 ? 1.0 : 0.0; 
+	return entrada > 0 ? 1.0 : 0.0; 
 }
 
-void  Neuronio::aplicarFuncAtivacao(float y, string funcAtiv)
+void  Neuronio::aplicarFuncAtivacao(float entrada)
 {
-	if (funcAtiv == "degrau") saida = degrau(y);
+	if (this->funcAtiv == "degrau") this->saida = degrau(entrada);
 }
 
-void  Neuronio::aplicarEntrada(vector<float> entrada, string funcAtiv)
+void  Neuronio::aplicarEntrada(vector<float> entrada)
 {
-	U = {};
+	definirSinalBias(entrada);
+
+	entradasPonderadas = {};
+	for (int i = 0; i < entrada.size(); i++) entradasPonderadas.push_back(entrada[i] * this->pesos[i]);
+
+	this->saida = accumulate(entradasPonderadas.begin(),
+                             entradasPonderadas.end(), 0.0);
+	aplicarFuncAtivacao(this->saida);
+}
+
+void Neuronio::definirSinalBias(vector<float> &entrada)
+{
 	entrada.insert(entrada.begin(), -1.0);
-
-	for (int i = 0; i < entrada.size(); i++)
-	{ 
-		U.push_back(entrada[i] * pesos[i]);
-	}
-
-	saida = accumulate(U.begin(), U.end(), 0.0);
-	aplicarFuncAtivacao(saida, funcAtiv);
 }
-
