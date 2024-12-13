@@ -7,24 +7,18 @@ using namespace std;
 class MLP
 {
 	public:
-		vector<int> camadasOcultas; 
-		vector<float> saidas, saidasDesejadas;
-		vector<vector<float>> entradas;
+		MLP(vector<int> estruturaRede, float taxaAprendizado, int numEpisodiosTotais);
+
+		vector<int> estruturaRede; 
 		vector<vector<Neuronio>> rede;
 		float erroQuad, erroQuadMed;
 		int episodios, numEntradas, numSaidas;
-		
-		MLP(int numEnt, vector<int> camOcu, int numSai);
 		
 		void feedFoward();
 		void backPropagation();
 		void calcularErroQuad();
 		void calcularErroQuadMed();
-		void definirEntrada(vector<float>);
-		void definirSaidasDesejadas(vector<float>);
-		void definirCamOcultas(vector<int>);
 		void atualizarPesos();
-	    void definirEpisodios();
 	    void treinar();
 	    //void salvarPesos(); 
 	    //void obterInformacoesRede();
