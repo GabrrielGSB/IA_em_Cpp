@@ -1,18 +1,12 @@
 #include "../include/Neuronio.h"
 #include <random>
-#include <../myFuncoes.cpp>
+#include "myFuncoes.cpp"
 
 Neuronio::Neuronio(float taxaAprendizado, int tamEntrada, string funcAtiv) : 
 				   taxaAprendizado(taxaAprendizado),
 				   tamEntrada(tamEntrada), 
 				   funcAtiv(funcAtiv){}
 
-float gerarNumAleatorio(float min, float max)
-{
-	float aleatorio = (float)rand() / RAND_MAX;
-    return min + aleatorio * (max - min);
-}
-		
 void  Neuronio::inicializarPesos(string modo)
 {
 	if (modo == "random")

@@ -18,10 +18,7 @@ class Perceptron
         Neuronio n;
 
     public:
-        Perceptron(int    numEpisodiosTotais, 
-                   float  taxaAprendizado, 
-                   int    tamEntrada, 
-                   string funcAtiv);
+        Perceptron(int numEpisodiosTotais, double taxaAprendizado, int tamEntrada, string funcAtiv);
 
         int    numEpisodiosAtual, 
                numEpisodiosTotais;

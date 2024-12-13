@@ -1,10 +1,20 @@
-#include "include/Perceptron.h"
+#include "../include/Perceptron.h"
 
 float gerarNumAleatorio()
 {
 	default_random_engine gerador;
     normal_distribution<float> distribuicao(0.0, 1.0);
     return distribuicao(gerador);
+
+    // float aleatorio = (float)rand() / RAND_MAX;
+    // return min + aleatorio * (max - min);
+}
+
+string limparEspacos(const string& str) 
+{
+    size_t start = str.find_first_not_of(" \t");
+    size_t end = str.find_last_not_of(" \t");
+    return (start == string::npos) ? "" : str.substr(start, end - start + 1);
 }
 
 void lerCSV(const string &arquivo, int n, vector<vector<float>> &matriz, vector<float> &ultimaColuna) 
@@ -58,9 +68,3 @@ void lerCSV(const string &arquivo, int n, vector<vector<float>> &matriz, vector<
     arquivoCSV.close();
 }
 
-string limparEspacos(const string& str) 
-{
-    size_t start = str.find_first_not_of(" \t");
-    size_t end = str.find_last_not_of(" \t");
-    return (start == string::npos) ? "" : str.substr(start, end - start + 1);
-}
