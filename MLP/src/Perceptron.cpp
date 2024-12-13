@@ -61,13 +61,13 @@ int main()
                                       { 0.6418, 1.0234, 7.0427}};
     vector<float> saidasDesejadas  = {0.0, 0.0, 0.0, 1.0, 1.0};
 
-    Perceptron p(2);
+    Perceptron p(1000,0.1,2);
 
-    p.treinar(0.1, entradas, saidasDesejadas);
+    p.treinar(entradas, saidasDesejadas);
 
     p.mostrarResultados(entradas);
 
-    printf("\nTreinamento terminou! em %d", p.episodios);
+    printf("\nTreinamento terminou! em %d", p.numEpisodiosTotais);
 
     return 0;
 }
@@ -75,18 +75,12 @@ int main()
 // int main()
 // {
 //     Perceptron p(5000, 0.01, 2);
-
 //     vector<vector<float>> entradas;
 //     vector<float>         saidasDesejadas;
-
 //     lerCSV("../DADOS/dados_treinamento.csv", 3, entradas, saidasDesejadas);
-
 //     // for (float i : saidasDesejadas) printf("%.1f", i);
-
 //     p.treinar(entradas, saidasDesejadas);
 //     p.mostrarResultados(entradas);
-
 //     printf("\nTreinamento terminou! em %d", p.numEpisodios);
-
 //     return 0;
 // }

@@ -12,9 +12,9 @@ class Neuronio
 {
 	private:
 		//Funções
-		float degrau(float entrada);
 		void definirTaxaAprendizado(float TaxaAprendizado);
 		void aplicarFuncAtivacao(float saida);
+		float degrau(float entrada);
 	
 	public:
 		//Construtor
