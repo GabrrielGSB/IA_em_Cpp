@@ -1,8 +1,9 @@
 #ifndef __MLP_HPP
 #define __MLP_HPP
 
-#include "Neuronio.h"
 using namespace std;
+
+#include "../../Comum/include/Neuronio.h"
 
 class MLP
 {
