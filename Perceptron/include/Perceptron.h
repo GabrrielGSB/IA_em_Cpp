@@ -1,7 +1,7 @@
 #ifndef __PERCEPTRON_HPP
 #define __PERCEPTRON_HPP
 
-#include "Neuronio.h"
+#include "../../Comum/include/Neuronio.h"
 #include <string>
 #include <vector>
 #include <cctype>

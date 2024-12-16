@@ -1,23 +1,27 @@
 DADOS_TREINAMENTO := Dados
 DADOS_VALIDACAO   := Dados
+
 # Nome do compilador
 CXX = g++
 
 # Flags de compilação
-CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude
+CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude -I$(COMUM_INCLUDE)
 
 # Diretórios
-SRC_DIR = src
 INCLUDE_DIR = include
+SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
+COMUM_INCLUDE = ../Comum/include
+COMUM_SRC = ../Comum/src
 
 # Nome do executável
-TARGET = $(BIN_DIR)/mainPerceptron
+TARGET = $(BIN_DIR)/mainMLP
 
 # Arquivos fonte e objetos
-SRCS = $(wildcard $(SRC_DIR)/*.cpp)
-OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+SRCS = $(wildcard $(SRC_DIR)/*.cpp) $(wildcard $(COMUM_SRC)/*.cpp)
+OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(filter $(SRC_DIR)/%, $(SRCS))) \
+       $(patsubst $(COMUM_SRC)/%.cpp, $(OBJ_DIR)/%.o, $(filter $(COMUM_SRC)/%, $(SRCS)))
 
 # Regra padrão
 all: $(TARGET)
@@ -26,17 +30,21 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	@mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@
-	@echo "Executavel criado em: $(TARGET)"
+	@echo "Executável criado em: $(TARGET)"
 
-# Regra para criar os objetos
+# Regra genérica para criar os objetos
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/%.o: $(COMUM_SRC)/%.cpp
 	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Limpeza dos arquivos gerados
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
-	@echo "Arquivos temporarios removidos."
+	@echo "Arquivos temporários removidos."
 
 # Limpeza completa
 clean_all: clean

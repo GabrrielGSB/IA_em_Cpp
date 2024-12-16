@@ -1,7 +1,7 @@
 
-#include "../include/Neuronio.h"
+#include "../../Comum/include/Neuronio.h"
 #include "../include/Perceptron.h"
-#include "../include/myFuncoes.h"
+#include "../../Comum/include/myFuncoes.h"
 
 int main()
 {

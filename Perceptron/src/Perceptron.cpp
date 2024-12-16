@@ -1,5 +1,5 @@
 #include "../include/Perceptron.h"
-#include "../include/myFuncoes.h"
+#include "../../Comum/include/myFuncoes.h"
 
 Perceptron::Perceptron(int numEpisodiosTotais, double taxaAprendizado, int tamEntrada, string funcAtiv="degrau") : 
                        numEpisodiosTotais(numEpisodiosTotais),

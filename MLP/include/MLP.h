@@ -4,18 +4,24 @@
 using namespace std;
 
 #include "../../Comum/include/Neuronio.h"
+#include <vector>
+#include <string>
+#include <numeric>
+#include <algorithm>
 
 class MLP
 {
 	public:
-		MLP(vector<int> estruturaRede, float taxaAprendizado, int numEpisodiosTotais);
+		MLP(vector<int> estruturaRede, float taxaAprendizado, 
+			int numEpisodiosTotais, string funcAtiv);
 
-		vector<int> estruturaRede; 
+		vector<float> saidas; 
 		vector<vector<Neuronio>> rede;
 		float erroQuad, erroQuadMed;
-		int episodios, numEntradas, numSaidas;
+		int numEpisodiosTotais, numEntradas, numSaidas;
 		
-		void feedFoward();
+		void inicializarRede();
+		void feedFoward(vector<float> dadosEntrada);
 		void backPropagation();
 		void calcularErroQuad();
 		void calcularErroQuadMed();
