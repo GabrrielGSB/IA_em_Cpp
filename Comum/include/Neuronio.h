@@ -14,21 +14,25 @@ class Neuronio
 		void definirTaxaAprendizado(float TaxaAprendizado);
 		void aplicarFuncAtivacao(float saida);
 		float degrau(float entrada);
+		float sigmoide(float entrada);
+		float sigmoide(float entrada, bool derivada);
 	
 	public:
 		//Construtor
 		Neuronio(float taxaAprendizado, int tamEntrada, string funcAtiv);
 
 		//Atributos
+		float saida, gradienteLocal, 
+			  taxaAprendizado, somaEntradasPonderadas;
 		int tamEntrada;
-		float saida, gradienteLocal, taxaAprendizado;
 		string funcAtiv;
-		vector<float> pesos, entradasPonderadas;
+		vector<float> pesos;
 
 		//Funções
 		void definirSinalBias(vector<float> &entrada);
 		void aplicarEntrada(vector<float> entrada);
 		void inicializarPesos(string mode);	
+		void calcularGradienteLocal(float saidaDesejada);
 };
 
 #endif

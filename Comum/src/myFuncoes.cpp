@@ -3,7 +3,7 @@
 
 float gerarNumAleatorio()
 {
-	default_random_engine gerador;
+	default_random_engine gerador(random_device{}());
     normal_distribution<float> distribuicao(0.0, 1.0);
     return distribuicao(gerador);
 
@@ -60,7 +60,7 @@ void lerCSV(const string &arquivo, int n, vector<vector<float>> &matriz, vector<
             colunaAtual++;
         }
 
-        if (linhaMatriz.size() == n) {
+        if ((int)linhaMatriz.size() == n) {
             matriz.push_back(linhaMatriz);   // Adiciona a linha ao vector<vector<float>>
             ultimaColuna.push_back(ultimoValor); // Adiciona à última coluna
         }
