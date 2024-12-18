@@ -3,8 +3,11 @@
 
 Neuronio::Neuronio(float taxaAprendizado, int tamEntrada, string funcAtiv) : 
 				   taxaAprendizado(taxaAprendizado),
-				   tamEntrada(tamEntrada), 
-				   funcAtiv(funcAtiv){}
+				   tamEntrada(tamEntrada),
+				   funcAtiv(funcAtiv)
+{
+	this->gradienteLocal = 0;
+}
 
 void  Neuronio::inicializarPesos(string modo)
 {
@@ -63,5 +66,5 @@ void Neuronio::definirSinalBias(vector<float> &entrada)
 
 void Neuronio::calcularGradienteLocal(float saidaDesejada)
 {
-	this->gradienteLocal = (saidaDesejada - this->saida) * sigmoide(this->somaEntradasPonderadas, true);
+	this->gradienteLocal = (saidaDesejada - this->saida) * sigmoide(this->somaEntradasPonderadas, true);                
 }

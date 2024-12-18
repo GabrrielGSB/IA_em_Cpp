@@ -1,12 +1,11 @@
 #include "../include/MLP.h"
 /*  
 ---------------{N1,Nx,...,No}----------------------------
-N1: quantidade de entradas da rede
-Nx: quantidade de neurônios na camada oculta -> Ex. {..., a, b, ...}: a e b são camadas ocultas com Nx neurônios
-No: Número de saídas da rede
+N1: quantidade de entradas da rede.
+Nx: quantidade de neurônios na camada oculta -> Ex. {..., a, b, ...}: a e b são camadas ocultas com Nx neurônios.
+No: Número de saídas da rede, cada saída representa um neurônio.
 ---------------------------------------------------------
 */
-
 MLP::MLP(vector<int> estruturaRede, float taxaAprendizado, 
          int numEpisodiosTotais, string funcAtiv) : taxaAprendizado(taxaAprendizado), numEpisodiosTotais(numEpisodiosTotais)
 {
@@ -16,9 +15,9 @@ MLP::MLP(vector<int> estruturaRede, float taxaAprendizado,
 
     this->rede.resize(estruturaRede.size() - 1);
 
-    for (size_t i = 1; i < estruturaRede.size(); i++)
+    for (size_t i = 1; i < estruturaRede.size(); i++) // Itera sobre a estrutura definida da rede
     {
-        for (int j = 0; j < estruturaRede[i]; j++) 
+        for (int j = 0; j < estruturaRede[i]; j++)    // Itera sobre os num de neurônios definidos para cada posição
         {
             this->rede[i-1].emplace_back(Neuronio(taxaAprendizado, estruturaRede[i-1], funcAtiv));
         }
@@ -109,7 +108,10 @@ void MLP::backPropagation(vector<float> saidasDesejadas)
         ->Atualização de pesos da camada de saída
         ->Atualização de pesos das camadas ocultas 
     */
-    for (size_t i = 0; i < rede.back().size(); i++) // Iteração sobre os neurônios de saída
+    
+    int numCalculoGradienteAtual = 1;
+
+    for (size_t i = 0; i < this->numSaidas; i++) // Iteração sobre os neurônios de saída
     {
         rede.back()[i].calcularGradienteLocal(saidasDesejadas[i]);
         for (size_t j = 0; j < rede.back()[i].pesos.size(); j++)
@@ -120,8 +122,42 @@ void MLP::backPropagation(vector<float> saidasDesejadas)
                                       this->saidasCamadas[saidasCamadas.size() - 2][i];
         }
     }
+
+    for (size_t i = 0; i < (this->rede.size() - 1); i++)
+    {
+        calcularSomaGradiente(numCalculoGradienteAtual);
+        for (Neuronio &ni : rede[rede.size() - numCalculoGradienteAtual - 1])
+        {
+            int numSaidaCount = 0;
+            for (size_t j = 0; j < ni.pesos.size(); j++)
+            {
+                ni.pesos[j] = ni.pesos[j] - 
+                              this->taxaAprendizado * 
+                              (-ni.gradienteLocal) *
+                              this->saidasCamadas[saidasCamadas.size() - 2 - numCalculoGradienteAtual][numSaidaCount];
+                
+                numSaidaCount++;
+            }
+
+        }
+        numCalculoGradienteAtual++;
+    }
 }
 
-void MLP::atualizarPesos(){}
+void MLP::calcularSomaGradiente(int &numCalculoGradienteAtual)
+{
+    // size_t numCamadasOcultas = this->rede.size() - 1;
+    int indiceNeuronioAnterior = 0;
+    for (Neuronio &ni : rede[rede.size() - numCalculoGradienteAtual - 1])
+    {
+        for (Neuronio &nj : rede[rede.size() - numCalculoGradienteAtual])
+        {
+            ni.gradienteLocal += nj.gradienteLocal * nj.pesos[0 + indiceNeuronioAnterior];
+        }
+        ni.gradienteLocal *= ni.sigmoide(ni.somaEntradasPonderadas, true);
+
+        indiceNeuronioAnterior++;
+    }
+}
 
 void MLP::treinar(){}
