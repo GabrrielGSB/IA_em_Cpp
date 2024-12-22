@@ -64,40 +64,6 @@ void MLP::inicializarPesosRede(string modo)
     }
 }
 
-void MLP::feedFoward(vector<float> dadosEntrada)
-{
-    /*
-    Função para aplicar os dados de entrada na rede e calcular
-    a saída respectiva de cada neurônio, guardando esses valores,
-    para uso no backpropagation.
-    */
-
-    //Redimenciona a matriz de saídas para se adequar com a rede.
-    this->saidasCamadas.resize(this->rede.size()); 
-    
-    int camadasCount = 0;
-    for (vector<Neuronio> &camada : this->rede) 
-    {
-        /*
-        Redimensionamento da lista de saídas de uma camada
-        para se adequar com número de neurônios da camada.
-        */
-        this->saidasCamadas[camadasCount].resize(camada.size());
-
-        int saidaCount = 0;
-        for (Neuronio &ni : camada)
-        {
-            ni.aplicarEntrada(dadosEntrada);
-            this->saidasCamadas[camadasCount][saidaCount] = ni.saida;
-            
-            saidaCount++;
-        } 
-        dadosEntrada = this->saidasCamadas[camadasCount];
-
-        camadasCount++;
-    }
-}
-
 void MLP::mostrarSaida(vector<float> entradaAtual)
 {
     /*
@@ -144,6 +110,86 @@ void MLP::mostrarPesos()
     printf("\n");
 }
 
+void MLP::calcularErroQuaMed(Neuronio &n, float saidaDesejada)
+{
+    this->erroAtual += 0.5 * pow((saidaDesejada - n.saida), 2);
+}
+
+void MLP::calcularGradienteNeuronioFinal(Neuronio &n, float saidaDesejada)
+{
+    n.gradienteLocal = (saidaDesejada - n.saida) * n.sigmoide(n.somaEntradasPonderadas, true);
+}
+
+void MLP::calcularGradienteNeuronioOculto(int &numCalculoGradienteAtual)
+{    
+    /*
+    numCalculoGradienteAtual: é usado para pegar a camada oculta de acordo 
+    com o número de cálculos de gradiente (começa em 1).
+    */
+    
+    // ------- Calcula o gradiente local dos neurônios da camada oculta ----------
+     /*
+    indicePeso: é usado para pegar o peso correto que liga o neurônio atual 
+    com os neurônios da camada seguinte.
+    */
+    int indicePeso = 0;
+
+    // Itera sobre os neurônios das camadas ocultas
+    for (Neuronio &n_atual : rede[rede.size() - numCalculoGradienteAtual - 1])
+    {
+        /*
+        Somatório do 'gradiente local' dos neurônios da camada seguinte ponderado pelos pesos
+        da conexão entre o neurônio atual e os neurônios da camada seguinte.
+        */
+
+        n_atual.gradienteLocal = 0;
+
+        for (Neuronio &n_prox : rede[rede.size() - numCalculoGradienteAtual])
+        {
+            n_atual.gradienteLocal += n_prox.gradienteLocal * n_prox.pesos[1 + indicePeso];
+        }
+
+        n_atual.gradienteLocal *= n_atual.sigmoide(n_atual.somaEntradasPonderadas, true);
+
+        indicePeso++;
+    }
+    //----------------------------------------------------------------------------
+}
+
+void MLP::feedFoward(vector<float> dadosEntrada)
+{
+    /*
+    Função para aplicar os dados de entrada na rede e calcular
+    a saída respectiva de cada neurônio, guardando esses valores,
+    para uso no backpropagation.
+    */
+
+    //Redimenciona a matriz de saídas para se adequar com a rede.
+    this->saidasCamadas.resize(this->rede.size()); 
+    
+    int camadasCount = 0;
+    for (vector<Neuronio> &camada : this->rede) 
+    {
+        /*
+        Redimensionamento da lista de saídas de uma camada
+        para se adequar com número de neurônios da camada.
+        */
+        this->saidasCamadas[camadasCount].resize(camada.size());
+
+        int saidaCount = 0;
+        for (Neuronio &ni : camada)
+        {
+            ni.aplicarEntrada(dadosEntrada);
+            this->saidasCamadas[camadasCount][saidaCount] = ni.saida;
+            
+            saidaCount++;
+        } 
+        dadosEntrada = this->saidasCamadas[camadasCount];
+
+        camadasCount++;
+    }
+}
+
 void MLP::backPropagation(vector<float> dadoEntrada, vector<float> saidaDesejada)
 {
     /* 
@@ -156,16 +202,18 @@ void MLP::backPropagation(vector<float> dadoEntrada, vector<float> saidaDesejada
     numCalculoGradienteAtual: Número de cálculos de gradiente que serão feitos para as camadas ocultas.
      -> ele começa em 1, pois a primeira camada oculta é a penúltima camada da rede.
      -> tem o propósito de pegar a camada oculta correta de acordo com o número de cálculos de gradiente.
+    erroAtual: usado para calcular a condição de parada pelo erro.
     */
     int numCalculoGradienteAtual = 1;
-    
+    this->erroAtual = 0;
     //---------------- Primeira Parte do BackPropagation -------------------------
     int neuronioCount = 0;
     for (Neuronio &ni : this->rede.back())
     {
         bool pesoBias = true;
 
-        calcularGradienteCamadaFinal(saidaDesejada[neuronioCount]);
+        calcularErroQuaMed(ni, saidaDesejada[neuronioCount]);
+        calcularGradienteNeuronioFinal(ni, saidaDesejada[neuronioCount]);
 
         //-------------- Atualização dos pesos da camada de saída ----------------
         // Itera sobre os pesos do neurônio
@@ -198,7 +246,7 @@ void MLP::backPropagation(vector<float> dadoEntrada, vector<float> saidaDesejada
     //Itera sobre o número de camadas ocultas (todas menos a camada de saída)
     for (size_t i = 0; i < (this->rede.size() - 1); i++) 
     {
-        calcularGradienteOculto(numCalculoGradienteAtual);
+        calcularGradienteNeuronioOculto(numCalculoGradienteAtual);
 
         //-------------- Atualização dos pesos das camadas ocultas ---------------
         for (Neuronio &ni : this->rede[this->rede.size() - numCalculoGradienteAtual - 1])
@@ -243,51 +291,6 @@ void MLP::backPropagation(vector<float> dadoEntrada, vector<float> saidaDesejada
     //----------------------------------------------------------------------------
 }
 
-void MLP::calcularGradienteCamadaFinal(float saidaDesejada)
-{
-    for (Neuronio &ni : rede.back())
-    {
-        ni.gradienteLocal = (saidaDesejada - ni.saida) * ni.sigmoide(ni.somaEntradasPonderadas, true);
-        // printf("erro: %.3f\n", (saidaDesejada - ni.saida));
-    }
-}
-
-void MLP::calcularGradienteOculto(int &numCalculoGradienteAtual)
-{    
-    /*
-    numCalculoGradienteAtual: é usado para pegar a camada oculta de acordo 
-    com o número de cálculos de gradiente (começa em 1).
-    */
-    
-    // ------- Calcula o gradiente local dos neurônios da camada oculta ----------
-     /*
-    indicePeso: é usado para pegar o peso correto que liga o neurônio atual 
-    com os neurônios da camada seguinte.
-    */
-    int indicePeso = 0;
-
-    // Itera sobre os neurônios das camadas ocultas
-    for (Neuronio &n_atual : rede[rede.size() - numCalculoGradienteAtual - 1])
-    {
-        /*
-        Somatório do 'gradiente local' dos neurônios da camada seguinte ponderado pelos pesos
-        da conexão entre o neurônio atual e os neurônios da camada seguinte.
-        */
-
-        n_atual.gradienteLocal = 0;
-
-        for (Neuronio &n_prox : rede[rede.size() - numCalculoGradienteAtual])
-        {
-            n_atual.gradienteLocal += n_prox.gradienteLocal * n_prox.pesos[1 + indicePeso];
-        }
-
-        n_atual.gradienteLocal *= n_atual.sigmoide(n_atual.somaEntradasPonderadas, true);
-
-        indicePeso++;
-    }
-    //----------------------------------------------------------------------------
-}
-
 void MLP::treinar(vector<vector<float>> &dadosEntrada, 
                   vector<vector<float>> &saidasDesejadas,
                   string mode)
@@ -299,8 +302,6 @@ void MLP::treinar(vector<vector<float>> &dadosEntrada,
     {
         for (int i = 0; i < this->numEpisodiosTotais; i++)
         {
-            // printf("Episódio: %d\n", i + 1);
-
             // Itera sobre os dados de entrada
             for (size_t j = 0; j < dadosEntrada.size(); j++)
             {
@@ -311,8 +312,22 @@ void MLP::treinar(vector<vector<float>> &dadosEntrada,
     }
     else if (mode  == "erroMinimo")
     {
+        int episodioCount = 0;
+        this->erroAtual = 1000000;
+        // printf("erro minimo: %.5f", this->erroMinimo);
+        while(this->erroAtual >= this->erroMinimo)
+        {
+            // printf("erro atual: %.5f\n", this->erroAtual);
+            for (size_t j = 0; j < dadosEntrada.size(); j++)
+            {
+                feedFoward(dadosEntrada[j]);
+                backPropagation(dadosEntrada[j], saidasDesejadas[j]);
+            }
+            episodioCount++;
+        if (episodioCount >= 1e6) break;
+        }
+        printf("Treinamento terminou em %d episódios", episodioCount);
     }
-    
     //------------------------------------------------------------------
 
 }
@@ -324,12 +339,11 @@ void MLP::testarRede(vector<vector<float>> &dadosEntrada, vector<vector<float>> 
     for (vector<float> entrada : dadosEntrada)
     {
         feedFoward(entrada);
-        // mostrarSaida(entrada);
+        mostrarSaida(entrada);
     }
     //------------------------------------------------------------------
-    
+    printf("Erro Quadrático Médio Atual: %.5f\n", this->erroAtual);
 }
-
 
 namespace funcAux
 {

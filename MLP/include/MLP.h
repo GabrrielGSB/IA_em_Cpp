@@ -20,7 +20,7 @@ class MLP
 		vector<vector<Neuronio>> rede;
 		vector<vector<float>> saidasCamadas;
 		float taxaAprendizado, somaGradienteCamada,
-			  erroMinimo;
+			  erroMinimo, erroAtual;
 		int numEpisodiosTotais, 
 			numEntradas, numSaidas;
 		
@@ -29,8 +29,9 @@ class MLP
 		void mostrarPesos();
 		void feedFoward(vector<float> dadosEntrada);
 		void backPropagation(vector<float> dadoEntrada, vector<float> saidaDesejada);
-		void calcularGradienteOculto(int &numCalculoGradienteAtual);
-		void calcularGradienteCamadaFinal(float saidaDesejada);
+		void calcularErroQuaMed(Neuronio &n,float saidaDesejada);
+		void calcularGradienteNeuronioOculto(int &numCalculoGradienteAtual);
+		void calcularGradienteNeuronioFinal(Neuronio &n,float saidaDesejada);
 	    void treinar(vector<vector<float>> &dadosEntrada, 
 					 vector<vector<float>> &saidasDesejadas,
 					 string mode);
