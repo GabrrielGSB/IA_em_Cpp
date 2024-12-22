@@ -15,30 +15,26 @@ class MLP
 {
 	public:
 		MLP(vector<int> estruturaRede, float taxaAprendizado, 
-			int numEpisodiosTotais, string funcAtiv);
+			int numEpisodiosTotais, float erroMinimo, string funcAtiv);
 
 		vector<vector<Neuronio>> rede;
 		vector<vector<float>> saidasCamadas;
-		float erroQuad, erroQuadMed,
-			  taxaAprendizado, somaGradienteCamada;
+		float taxaAprendizado, somaGradienteCamada,
+			  erroMinimo;
 		int numEpisodiosTotais, 
 			numEntradas, numSaidas;
 		
 		void inicializarPesosRede(string modo);
-		void mostrarSaidas();
+		void mostrarSaida(vector<float> entradaAtual);
 		void mostrarPesos();
 		void feedFoward(vector<float> dadosEntrada);
 		void backPropagation(vector<float> dadoEntrada, vector<float> saidaDesejada);
 		void calcularGradienteOculto(int &numCalculoGradienteAtual);
 		void calcularGradienteCamadaFinal(float saidaDesejada);
-	    void treinar();
-		// void calcularErroQuad();
-		// float calcularErroQuadMed();
-	    //void salvarPesos(); 
-	    //void obterInformacoesRede();
-	    
-			
-			
+	    void treinar(vector<vector<float>> &dadosEntrada, 
+					 vector<vector<float>> &saidasDesejadas,
+					 string mode);
+		void testarRede(vector<vector<float>> &dadosEntrada, vector<vector<float>> &saidasDesejadas);	
 };
 
 #endif

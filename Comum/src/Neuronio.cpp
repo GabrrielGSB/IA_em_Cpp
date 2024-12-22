@@ -6,7 +6,6 @@ Neuronio::Neuronio(float taxaAprendizado, int tamEntrada, string funcAtiv) :
 				   tamEntrada(tamEntrada),
 				   funcAtiv(funcAtiv)
 {
-	this->gradienteLocal = 0;
 	inicializarPesos("random");
 }
 
@@ -51,13 +50,17 @@ void  Neuronio::aplicarFuncAtivacao(float entrada)
 void  Neuronio::aplicarEntrada(vector<float> entrada)
 {
 	definirSinalBias(entrada);
-	this->saida = 0;
 
-	for (size_t i = 0; i < entrada.size(); i++) this->saida += entrada[i] * this->pesos[i];
+	this->somaEntradasPonderadas = 0;
 
-	this->somaEntradasPonderadas = this->saida;
+	int pesoCount = 0;
+	for (float &dadoEntrada : entrada) 
+	{
+		this->somaEntradasPonderadas += dadoEntrada * this->pesos[pesoCount];
+		pesoCount++;
+	}
 
-	aplicarFuncAtivacao(this->saida);
+	aplicarFuncAtivacao(this->somaEntradasPonderadas);
 }
 
 void Neuronio::definirSinalBias(vector<float> &entrada)

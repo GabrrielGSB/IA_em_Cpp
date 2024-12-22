@@ -2,11 +2,25 @@
 
 int main()
 {
-    MLP rede({2,2,3,2,1}, 0.1, 10, "sigmoide");
-    rede.feedFoward({1.2, 0.5});
-    rede.mostrarPesos();
-    rede.backPropagation({1, 1.2, 0.5},{2});
-    rede.mostrarPesos();
+    MLP rede({2,2,1}, 0.1, 10000, "sigmoide");
+
+    // vector<vector<float>> dadosEntrada = { {0.2, 0.9, 0.4}, {0.1, 0.3, 0.5}, 
+    //                                        {0.9, 0.7, 0.8}, {0.6, 0.4, 0.3} };
+    // vector<vector<float>> saidasDesejadas = { {0.7, 0.3}, {0.6, 0.4}, 
+    //                                           {0.5, 0.5}, {0.2, 0.8} };
+
+    vector<vector<float>> dadosEntrada = { {0,0}, {0,1}, 
+                                           {1,0}, {1,1} };
+    vector<vector<float>> saidasDesejadas = { {0}, {1}, 
+                                              {1}, {0} };
+
+    rede.treinar(dadosEntrada, saidasDesejadas, "ss");
+    rede.testarRede(dadosEntrada, saidasDesejadas);
+
+    // rede.feedFoward({1.2, 0.5});
+    // rede.mostrarPesos();
+    // rede.backPropagation({1, 1.2, 0.5},{2});
+    // rede.mostrarPesos();
     // rede.mostrarSaidas();
     // for (float saida : rede.saidasCamadas.back()) printf("%.3f ", saida);
 
