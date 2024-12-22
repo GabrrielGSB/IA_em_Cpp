@@ -30,7 +30,6 @@ class Neuronio
 		void definirSinalBias(vector<float> &entrada);
 		void aplicarEntrada(vector<float> entrada);
 		void inicializarPesos(string mode);	
-		void calcularGradienteLocal(float saidaDesejada);
 		float sigmoide(float entrada);
 		float sigmoide(float entrada, bool derivada);
 };

@@ -24,12 +24,13 @@ class MLP
 		int numEpisodiosTotais, 
 			numEntradas, numSaidas;
 		
-		void inicializarPesosRede();
+		void inicializarPesosRede(string modo);
 		void mostrarSaidas();
 		void mostrarPesos();
 		void feedFoward(vector<float> dadosEntrada);
-		void backPropagation(vector<float> saidasDesejadas);
-		void calcularSomaGradiente(int &numCalculoGradienteAtual);
+		void backPropagation(vector<float> dadoEntrada, vector<float> saidaDesejada);
+		void calcularGradienteOculto(int &numCalculoGradienteAtual);
+		void calcularGradienteCamadaFinal(float saidaDesejada);
 	    void treinar();
 		// void calcularErroQuad();
 		// float calcularErroQuadMed();
