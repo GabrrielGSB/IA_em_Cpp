@@ -2,7 +2,7 @@
 
 namespace funcAux
 {
-    bool checarIndiceCamadaSaida(vector<vector<float>> &saidasCamadas, int &numCalculoGradienteAtual);
+    bool checarIndiceCamadaSaida(vector<vector<double>> &saidasCamadas, int &numCalculoGradienteAtual);
 }
 
 /*  
@@ -13,12 +13,20 @@ No: Número de saídas da rede, cada saída representa um neurônio.
 ---------------------------------------------------------
 */
 
-MLP::MLP(vector<int> estruturaRede, float taxaAprendizado, 
-         int numEpisodiosTotais, float erroMinimo, string funcAtiv) : 
+MLP::MLP(vector<int> estruturaRede, double taxaAprendizado, 
+         int numEpisodiosTotais, double erroMinimo, string funcAtiv) : 
          taxaAprendizado(taxaAprendizado), 
          erroMinimo(erroMinimo),
          numEpisodiosTotais(numEpisodiosTotais)
 {
+    this->erroQuadratico = 0;
+    this->erroQuadraticoMedio = 0;
+    this->variacaoErro = 1;
+    this->erroRelativoMedio = 0;
+    this->somaErro = 0;
+    this->variacaoErro = 1;
+    this->erroCount = 0;
+
     /*
     Esse constrututor (MLP) inicializa a rede com a estrutura definida pelo usuário,
     defininfo a taxa de aprendizado e a função de ativação.
@@ -64,7 +72,7 @@ void MLP::inicializarPesosRede(string modo)
     }
 }
 
-void MLP::mostrarSaida(vector<float> entradaAtual)
+void MLP::mostrarSaida(vector<double> entradaAtual)
 {
     /*
     Função para mostrar a saída de uma determinada entrada
@@ -74,12 +82,12 @@ void MLP::mostrarSaida(vector<float> entradaAtual)
     printf("Entradas atuais:\n");
 
     int entradaCount = 0;
-    for (float dadoEntrada : entradaAtual) printf(" ->Entrada %d: %.3f \n", entradaCount++, dadoEntrada);
+    for (double dadoEntrada : entradaAtual) printf(" ->Entrada %d: %.4f \n", entradaCount++, dadoEntrada);
 
     printf("Saídas final da rede:\n");
 
     int saidaCount = 0;
-    for (float saida : this->saidasCamadas.back()) printf(" ->Y%d: %.3f \n", saidaCount, saida);
+    for (double saida : this->saidasCamadas.back()) printf(" ->Y%d: %.4f \n", saidaCount, saida);
 
     printf("\n");
 }
@@ -100,7 +108,7 @@ void MLP::mostrarPesos()
             printf("   ->Neurônio %d:\n", neuronioCount++);
 
             int pesoCount = 1;  
-            for (float &peso : ni.pesos) 
+            for (double &peso : ni.pesos) 
             {
                 printf("     ->W%d: %.8f\n", pesoCount++, peso);
             }
@@ -110,14 +118,60 @@ void MLP::mostrarPesos()
     printf("\n");
 }
 
-void MLP::calcularErroQuaMed(Neuronio &n, float saidaDesejada)
+void MLP::calcularErro(Neuronio &n, double &saidaDesejada)
 {
-    this->erroAtual += 0.5 * pow((saidaDesejada - n.saida), 2);
+    this->erroAtual = saidaDesejada - n.saida;
+    this->somaErro += erroAtual;
 }
 
-void MLP::calcularGradienteNeuronioFinal(Neuronio &n, float saidaDesejada)
+void MLP::calcularMediaErro()
 {
-    n.gradienteLocal = (saidaDesejada - n.saida) * n.sigmoide(n.somaEntradasPonderadas, true);
+    this->mediaErro = this->somaErro / (this->numDados * this->numSaidas);
+}
+
+void MLP::calcularErroQuadratico()
+{
+    this->erroQuadratico += 0.5 * pow((this->erroAtual), 2);
+}
+
+void MLP::calcularErroQuadraticoMedio(double erroQuadratico, size_t numDados)
+{
+    double erroQuadraticoMedioOld = this->erroQuadraticoMedio;
+
+    this->erroQuadraticoMedio += erroQuadratico / numDados;
+
+    this->variacaoErro = this->erroQuadraticoMedio - erroQuadraticoMedioOld;
+
+    this->erroQuadratico = 0;
+}
+
+void MLP::calcularErroRelativoMed(vector<double> &saidaDesejada)
+{
+    /*
+    Aplicação do cálculo Erro Absoluto Percentual Médio (MAPE) nos dados de validação.
+    */
+    // --------------------- Loop de Cálculo da Precisão -----------------------
+    for (size_t j = 0; j < saidaDesejada.size(); j++)
+    {
+        this->erroRelativoMedio += abs((this->saidasCamadas.back()[j] - saidaDesejada[j]) / this->saidasCamadas.back()[j]);
+        // printf("erro: %.5f%%\n", (erroRelativoMedio));
+    }
+    //------------------------------------------------------------------
+}
+
+void MLP::calcularVarianciaErro()
+{
+    for (double erro : this->erros)
+    {
+        this->variancia += pow((erro - this->mediaErro), 2);
+    }
+    this->variancia /= (this->numDados * this->numSaidas);
+    printf("Variância do erro: %.5f\n", variancia);
+}
+
+void MLP::calcularGradienteNeuronioFinal(Neuronio &n)
+{
+    n.gradienteLocal = (this->erroAtual) * n.sigmoide(n.somaEntradasPonderadas, true);
 }
 
 void MLP::calcularGradienteNeuronioOculto(int &numCalculoGradienteAtual)
@@ -156,7 +210,7 @@ void MLP::calcularGradienteNeuronioOculto(int &numCalculoGradienteAtual)
     //----------------------------------------------------------------------------
 }
 
-void MLP::feedFoward(vector<float> dadosEntrada)
+void MLP::feedFoward(vector<double> dadosEntrada)
 {
     /*
     Função para aplicar os dados de entrada na rede e calcular
@@ -190,7 +244,7 @@ void MLP::feedFoward(vector<float> dadosEntrada)
     }
 }
 
-void MLP::backPropagation(vector<float> dadoEntrada, vector<float> saidaDesejada)
+void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDesejada)
 {
     /* 
     O backpropagation é dividido em duas partes:
@@ -205,20 +259,24 @@ void MLP::backPropagation(vector<float> dadoEntrada, vector<float> saidaDesejada
     erroAtual: usado para calcular a condição de parada pelo erro.
     */
     int numCalculoGradienteAtual = 1;
-    this->erroAtual = 0;
+
     //---------------- Primeira Parte do BackPropagation -------------------------
     int neuronioCount = 0;
     for (Neuronio &ni : this->rede.back())
     {
-        bool pesoBias = true;
+        calcularErro(ni, saidaDesejada[neuronioCount]);
+        salvarErro();
 
-        calcularErroQuaMed(ni, saidaDesejada[neuronioCount]);
-        calcularGradienteNeuronioFinal(ni, saidaDesejada[neuronioCount]);
+        calcularErroQuadratico();
+        
+        calcularGradienteNeuronioFinal(ni);
+
+        bool pesoBias = true;
 
         //-------------- Atualização dos pesos da camada de saída ----------------
         // Itera sobre os pesos do neurônio
         int pesoCount = 0;
-        for (float &peso : ni.pesos)
+        for (double &peso : ni.pesos)
         {
             if (pesoBias)
             {
@@ -239,7 +297,9 @@ void MLP::backPropagation(vector<float> dadoEntrada, vector<float> saidaDesejada
         }
         //------------------------------------------------------------------------
         neuronioCount++;
+        this->erroCount++;
     }
+    calcularErroQuadraticoMedio(this->erroQuadratico, this->numDados);
     //----------------------------------------------------------------------------
 
     //---------------- Segunda Parte do BackPropagation --------------------------
@@ -257,7 +317,7 @@ void MLP::backPropagation(vector<float> dadoEntrada, vector<float> saidaDesejada
             int numSaidaCount = -1;
             bool pesoBias = true;
 
-            for (float &peso : ni.pesos)
+            for (double &peso : ni.pesos)
             {
                 if (!pesoBias) numSaidaCount++;
 
@@ -291,17 +351,19 @@ void MLP::backPropagation(vector<float> dadoEntrada, vector<float> saidaDesejada
     //----------------------------------------------------------------------------
 }
 
-void MLP::treinar(vector<vector<float>> &dadosEntrada, 
-                  vector<vector<float>> &saidasDesejadas,
-                  string mode)
+void MLP::treinar(vector<vector<double>> &dadosEntrada, 
+                  vector<vector<double>> &saidasDesejadas,
+                  string mode, int &IDtreinamento)
 {
-    
+    this->numDados = dadosEntrada.size();
+    this->erros.resize(this->numDados * this->numSaidas);   
     // --------------------- Loop de treinamento -----------------------
     // Itera sobre o número de episódios totais
     if (mode == "numeroEpisodios")
     {
         for (int i = 0; i < this->numEpisodiosTotais; i++)
         {
+           
             // Itera sobre os dados de entrada
             for (size_t j = 0; j < dadosEntrada.size(); j++)
             {
@@ -312,42 +374,76 @@ void MLP::treinar(vector<vector<float>> &dadosEntrada,
     }
     else if (mode  == "erroMinimo")
     {
+        vector<vector<double>> dadosErroQuadMed = {};
+
         int episodioCount = 0;
-        this->erroAtual = 1000000;
-        // printf("erro minimo: %.5f", this->erroMinimo);
-        while(this->erroAtual >= this->erroMinimo)
+        while(this->variacaoErro >= this->erroMinimo)
         {
-            // printf("erro atual: %.5f\n", this->erroAtual);
+            this->erroCount = 0;
             for (size_t j = 0; j < dadosEntrada.size(); j++)
             {
                 feedFoward(dadosEntrada[j]);
                 backPropagation(dadosEntrada[j], saidasDesejadas[j]);
+
+                dadosErroQuadMed.push_back({this->erroQuadraticoMedio});
             }
+            
+            // salvarErroCSV(episodioCount);
             episodioCount++;
-        if (episodioCount >= 1e6) break;
+
+        if (episodioCount >= 1e4) break;
         }
-        printf("Treinamento terminou em %d episódios", episodioCount);
+
+        string nomeArquivo = "ErroQuadMed(" + to_string(IDtreinamento) + ")" + ".csv";
+        salvarErroQuaMedCSV(nomeArquivo, dadosErroQuadMed);
+        
+        printf("\nTreinamento terminou em %d episódios\n", episodioCount);
+        calcularVarianciaErro();
     }
     //------------------------------------------------------------------
 
 }
 
-void MLP::testarRede(vector<vector<float>> &dadosEntrada, vector<vector<float>> &saidasDesejadas)
+void MLP::testarRede(vector<vector<double>> &dadosEntrada, vector<vector<double>> &saidasDesejadas)
 {
+    size_t numDados = saidasDesejadas.size();
+
     // --------------------- Loop de teste -----------------------
     // Itera sobre os dados de entrada
-    for (vector<float> entrada : dadosEntrada)
+    int saidaDesejadaCount = 0;
+    for (vector<double> entrada : dadosEntrada)
     {
         feedFoward(entrada);
-        mostrarSaida(entrada);
+        calcularErroRelativoMed(saidasDesejadas[saidaDesejadaCount]);
+        saidaDesejadaCount++;
+        // mostrarSaida(entrada);
     }
     //------------------------------------------------------------------
-    printf("Erro Quadrático Médio Atual: %.5f\n", this->erroAtual);
+    this->erroRelativoMedio *= 100;
+    this->erroRelativoMedio /= numDados;
+
+    printf("Erro Relativo Médio do Conjunto de Validação: %.4f%% \n", this->erroRelativoMedio);
+}
+
+void MLP::salvarErro()
+{
+    this->erros[this->erroCount] = this->erroAtual;
+}
+
+void MLP::salvarErroCSV(int episodioCount)
+{
+    string nomeArquivo = "Erros(" + to_string(episodioCount) + ")" + ".csv";
+    salvarCSV(nomeArquivo, "Erros", this->erros);
+}
+
+void MLP::salvarErroQuaMedCSV(string &nomeArquivo, vector<vector<double>> dadosErroQuadMed)
+{
+    salvarCSV(nomeArquivo, "Erro Quadrático Médio/Época", dadosErroQuadMed);
 }
 
 namespace funcAux
 {
-    bool checarIndiceCamadaSaida(vector<vector<float>> &saidasCamadas, int &numCalculoGradienteAtual)
+    bool checarIndiceCamadaSaida(vector<vector<double>> &saidasCamadas, int &numCalculoGradienteAtual)
     {
         /*
         Checa se a camada atual, para atualização de pesos, é a primeira camada oculta.

@@ -11,27 +11,27 @@ class Neuronio
 {
 	private:
 		//Funções
-		void definirTaxaAprendizado(float TaxaAprendizado);
-		void aplicarFuncAtivacao(float saida);
-		float degrau(float entrada);
+		void definirTaxaAprendizado(double TaxaAprendizado);
+		void aplicarFuncAtivacao(double saida);
+		double degrau(double entrada);
 	
 	public:
 		//Construtor
-		Neuronio(float taxaAprendizado, int tamEntrada, string funcAtiv);
+		Neuronio(double taxaAprendizado, int tamEntrada, string funcAtiv);
 
 		//Atributos
-		float saida, gradienteLocal, 
+		double saida, gradienteLocal, 
 			  taxaAprendizado, somaEntradasPonderadas;
 		int tamEntrada, numLigacoesSaida;
 		string funcAtiv;
-		vector<float> pesos;
+		vector<double> pesos;
 
 		//Funções
-		void definirSinalBias(vector<float> &entrada);
-		void aplicarEntrada(vector<float> entrada);
+		void definirSinalBias(vector<double> &entrada);
+		void aplicarEntrada(vector<double> entrada);
 		void inicializarPesos(string mode);	
-		float sigmoide(float entrada);
-		float sigmoide(float entrada, bool derivada);
+		double sigmoide(double entrada);
+		double sigmoide(double entrada, bool derivada);
 };
 
 #endif

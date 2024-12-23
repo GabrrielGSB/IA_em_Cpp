@@ -14,28 +14,42 @@ using namespace std;
 class MLP
 {
 	public:
-		MLP(vector<int> estruturaRede, float taxaAprendizado, 
-			int numEpisodiosTotais, float erroMinimo, string funcAtiv);
+		MLP(vector<int> estruturaRede, double taxaAprendizado, 
+			int numEpisodiosTotais, double erroMinimo, string funcAtiv);
 
 		vector<vector<Neuronio>> rede;
-		vector<vector<float>> saidasCamadas;
-		float taxaAprendizado, somaGradienteCamada,
-			  erroMinimo, erroAtual;
+		vector<vector<double>> saidasCamadas;
+		vector<double> erros;
+		double taxaAprendizado, somaGradienteCamada, erroAtual,
+			   somaErro, mediaErro, erroMinimo, variacaoErro, 
+			   erroQuadratico, erroQuadraticoMedio, erroRelativoMedio,
+			   variancia;
 		int numEpisodiosTotais, 
-			numEntradas, numSaidas;
+			numEntradas, numSaidas,
+			numDados, erroCount;
 		
 		void inicializarPesosRede(string modo);
-		void mostrarSaida(vector<float> entradaAtual);
+		void mostrarSaida(vector<double> entradaAtual);
 		void mostrarPesos();
-		void feedFoward(vector<float> dadosEntrada);
-		void backPropagation(vector<float> dadoEntrada, vector<float> saidaDesejada);
-		void calcularErroQuaMed(Neuronio &n,float saidaDesejada);
+		void calcularErro(Neuronio &n, double &saidaDesejada);
+		void calcularMediaErro();
+		void calcularErroQuadratico();
+		void calcularErroQuadraticoMedio(double erroQuadratico, size_t numDados);
+		void calcularErroRelativoMed(vector<double> &saidaDesejada);
+		void calcularVarianciaErro();
 		void calcularGradienteNeuronioOculto(int &numCalculoGradienteAtual);
-		void calcularGradienteNeuronioFinal(Neuronio &n,float saidaDesejada);
-	    void treinar(vector<vector<float>> &dadosEntrada, 
-					 vector<vector<float>> &saidasDesejadas,
-					 string mode);
-		void testarRede(vector<vector<float>> &dadosEntrada, vector<vector<float>> &saidasDesejadas);	
+		void calcularGradienteNeuronioFinal(Neuronio &n);
+		void feedFoward(vector<double> dadosEntrada);
+		void backPropagation(vector<double> dadoEntrada, vector<double> saidaDesejada);
+	    void treinar(vector<vector<double>> &dadosEntrada, 
+					 vector<vector<double>> &saidasDesejadas,
+					 string mode,
+					 int &IDtreinamento);
+		void testarRede(vector<vector<double>> &dadosEntrada, 
+				        vector<vector<double>> &saidasDesejadas);	
+		void salvarErroQuaMedCSV(string &nomeArquivo, vector<vector<double>> dadosErroQuadMed);
+		void salvarErro();
+		void salvarErroCSV(int episodioCount);
 };
 
 #endif

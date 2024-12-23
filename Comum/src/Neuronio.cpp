@@ -1,7 +1,7 @@
 #include "../include/Neuronio.h"
 #include "myFuncoes.h"
 
-Neuronio::Neuronio(float taxaAprendizado, int tamEntrada, string funcAtiv) : 
+Neuronio::Neuronio(double taxaAprendizado, int tamEntrada, string funcAtiv) : 
 				   taxaAprendizado(taxaAprendizado),
 				   tamEntrada(tamEntrada),
 				   funcAtiv(funcAtiv)
@@ -21,40 +21,40 @@ void  Neuronio::inicializarPesos(string modo)
 	}
 }
 
-void  Neuronio::definirTaxaAprendizado(float taxaAprendizado)
+void  Neuronio::definirTaxaAprendizado(double taxaAprendizado)
 {
 	this->taxaAprendizado = taxaAprendizado;
 }
 
-float Neuronio::degrau(float entrada) 
+double Neuronio::degrau(double entrada) 
 { 
 	return entrada > 0 ? 1.0 : 0.0; 
 }
 
-float Neuronio::sigmoide(float entrada)
+double Neuronio::sigmoide(double entrada)
 {
 	return (1 / (1 + exp(-entrada)));
 }
-float Neuronio::sigmoide(float entrada, bool derivada)
+double Neuronio::sigmoide(double entrada, bool derivada)
 {
 	if (derivada == true) return (sigmoide(entrada) * (1 - sigmoide(entrada)));
 	else                  return sigmoide(entrada);
 }
 
-void  Neuronio::aplicarFuncAtivacao(float entrada)
+void  Neuronio::aplicarFuncAtivacao(double entrada)
 {
 	if (this->funcAtiv == "degrau")   this->saida = degrau(entrada);
 	if (this->funcAtiv == "sigmoide") this->saida = sigmoide(entrada);
 }
 
-void  Neuronio::aplicarEntrada(vector<float> entrada)
+void  Neuronio::aplicarEntrada(vector<double> entrada)
 {
 	definirSinalBias(entrada);
 
 	this->somaEntradasPonderadas = 0;
 
 	int pesoCount = 0;
-	for (float &dadoEntrada : entrada) 
+	for (double &dadoEntrada : entrada) 
 	{
 		this->somaEntradasPonderadas += dadoEntrada * this->pesos[pesoCount];
 		pesoCount++;
@@ -63,7 +63,7 @@ void  Neuronio::aplicarEntrada(vector<float> entrada)
 	aplicarFuncAtivacao(this->somaEntradasPonderadas);
 }
 
-void Neuronio::definirSinalBias(vector<float> &entrada)
+void Neuronio::definirSinalBias(vector<double> &entrada)
 {
 	entrada.insert(entrada.begin(), 1.0);
 }
