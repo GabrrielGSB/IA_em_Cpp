@@ -10,20 +10,27 @@ int main()
     vector<vector<double>> saidasDesejadasValidacao;
     vector<double> saidaDesejada;
 
-    lerCSV("Dados/dadosTreinamento.csv", 3, dadosEntradaTreinamento, saidasDesejadasTreinamento);
-    lerCSV("Dados/dadosValidacao.csv", 3, dadosEntradaValidacao, saidasDesejadasValidacao);
-    // saidasDesejadasTreinamento.resize(saidaDesejada.size());
+    lerCSV("Dados/dadosTreinamento1.csv", 4, 
+            dadosEntradaTreinamento, 
+            saidasDesejadasTreinamento);
 
-    // for (size_t i = 0; i < saidaDesejada.size(); i++) saidasDesejadasTreinamento[i].emplace_back(saidaDesejada[i]);
+    lerCSV("Dados/dadosValidacao1.csv", 4, 
+            dadosEntradaValidacao, 
+            saidasDesejadasValidacao);
     
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 1; i++)
     {    
-        MLP rede({3,2,1}, 0.05, 1000, 1e-6, "sigmoide");
-        rede.treinar(dadosEntradaTreinamento, saidasDesejadasTreinamento, "erroMinimo", i);
-        // for (double erro : rede.erros) printf("%.5f\n", erro);
-        rede.testarRede(dadosEntradaValidacao, saidasDesejadasValidacao);
-    }
+        MLP rede({4,15,3}, 0.1, 1000, 1e-6, "sigmoide");
 
+        rede.treinar(dadosEntradaTreinamento, 
+                     saidasDesejadasTreinamento, 
+                     "erroMinimo", 
+                     i);
+
+        rede.testarRede(dadosEntradaValidacao, 
+                        saidasDesejadasValidacao);
+    }
+    // :)
     return 0;
 }
 

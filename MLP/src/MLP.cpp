@@ -79,15 +79,15 @@ void MLP::mostrarSaida(vector<double> entradaAtual)
     */
 
     printf("\n");
-    printf("Entradas atuais:\n");
+    printf(" *Entradas atuais:\n");
 
     int entradaCount = 0;
-    for (double dadoEntrada : entradaAtual) printf(" ->Entrada %d: %.4f \n", entradaCount++, dadoEntrada);
+    for (double dadoEntrada : entradaAtual) printf("  ->Entrada %d: %.4f \n", entradaCount++, dadoEntrada);
 
-    printf("Saídas final da rede:\n");
+    printf(" *Saídas final da rede:\n");
 
     int saidaCount = 0;
-    for (double saida : this->saidasCamadas.back()) printf(" ->Y%d: %.4f \n", saidaCount, saida);
+    for (double saida : this->saidasCamadas.back()) printf("  ->Y%d: %.4f \n", saidaCount, saida);
 
     printf("\n");
 }
@@ -124,6 +124,12 @@ void MLP::calcularErro(Neuronio &n, double &saidaDesejada)
     this->somaErro += erroAtual;
 }
 
+void MLP::calcularErro(double &saida, double &saidaDesejada)
+{
+    this->erroAtual = saidaDesejada - saida;
+    this->somaErro += erroAtual;
+}
+
 void MLP::calcularMediaErro()
 {
     this->mediaErro = this->somaErro / (this->numDados * this->numSaidas);
@@ -136,16 +142,11 @@ void MLP::calcularErroQuadratico()
 
 void MLP::calcularErroQuadraticoMedio(double erroQuadratico, size_t numDados)
 {
-    double erroQuadraticoMedioOld = this->erroQuadraticoMedio;
-
     this->erroQuadraticoMedio += erroQuadratico / numDados;
-
-    this->variacaoErro = this->erroQuadraticoMedio - erroQuadraticoMedioOld;
-
     this->erroQuadratico = 0;
 }
 
-void MLP::calcularErroRelativoMed(vector<double> &saidaDesejada)
+void MLP::calcularErroRelativoMedio(vector<double> &saidaDesejada)
 {
     /*
     Aplicação do cálculo Erro Absoluto Percentual Médio (MAPE) nos dados de validação.
@@ -154,7 +155,6 @@ void MLP::calcularErroRelativoMed(vector<double> &saidaDesejada)
     for (size_t j = 0; j < saidaDesejada.size(); j++)
     {
         this->erroRelativoMedio += abs((this->saidasCamadas.back()[j] - saidaDesejada[j]) / this->saidasCamadas.back()[j]);
-        // printf("erro: %.5f%%\n", (erroRelativoMedio));
     }
     //------------------------------------------------------------------
 }
@@ -374,21 +374,25 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
     }
     else if (mode  == "erroMinimo")
     {
-        vector<vector<double>> dadosErroQuadMed = {};
+        vector<double> dadosErroQuadMed = {};
 
         int episodioCount = 0;
         while(this->variacaoErro >= this->erroMinimo)
         {
+            double erroQuadraticoMedioOld = this->erroQuadraticoMedio;
+            this->erroQuadraticoMedio = 0;
+
             this->erroCount = 0;
             for (size_t j = 0; j < dadosEntrada.size(); j++)
             {
                 feedFoward(dadosEntrada[j]);
                 backPropagation(dadosEntrada[j], saidasDesejadas[j]);
-
-                dadosErroQuadMed.push_back({this->erroQuadraticoMedio});
             }
-            
-            // salvarErroCSV(episodioCount);
+
+            this->variacaoErro = abs(this->erroQuadraticoMedio - erroQuadraticoMedioOld);
+
+            dadosErroQuadMed.push_back(this->erroQuadraticoMedio);
+
             episodioCount++;
 
         if (episodioCount >= 1e4) break;
@@ -398,7 +402,7 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
         salvarErroQuaMedCSV(nomeArquivo, dadosErroQuadMed);
         
         printf("\nTreinamento terminou em %d episódios\n", episodioCount);
-        calcularVarianciaErro();
+        // calcularVarianciaErro();
     }
     //------------------------------------------------------------------
 
@@ -406,21 +410,36 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
 
 void MLP::testarRede(vector<vector<double>> &dadosEntrada, vector<vector<double>> &saidasDesejadas)
 {
-    size_t numDados = saidasDesejadas.size();
+    this->erroAtual = 0;
+    this->somaErro  = 0;
+    this->mediaErro = 0;
+
+    this->numDados = saidasDesejadas.size();
+
+    this->erros.resize(numDados * this->numSaidas);
 
     // --------------------- Loop de teste -----------------------
-    // Itera sobre os dados de entrada
     int saidaDesejadaCount = 0;
+    printf("\nTeste da Rede:\n");
+    // Itera sobre os dados de entrada
     for (vector<double> entrada : dadosEntrada)
     {
         feedFoward(entrada);
-        calcularErroRelativoMed(saidasDesejadas[saidaDesejadaCount]);
+
+        calcularErro(this->saidasCamadas.back()[0], saidasDesejadas[saidaDesejadaCount][0]);
+        salvarErro(saidaDesejadaCount);
+
+        mostrarSaida(entrada);
+
+        calcularErroRelativoMedio(saidasDesejadas[saidaDesejadaCount]);
         saidaDesejadaCount++;
-        // mostrarSaida(entrada);
     }
     //------------------------------------------------------------------
     this->erroRelativoMedio *= 100;
-    this->erroRelativoMedio /= numDados;
+    this->erroRelativoMedio /= this->numDados;
+
+    calcularMediaErro();
+    calcularVarianciaErro();
 
     printf("Erro Relativo Médio do Conjunto de Validação: %.4f%% \n", this->erroRelativoMedio);
 }
@@ -430,13 +449,18 @@ void MLP::salvarErro()
     this->erros[this->erroCount] = this->erroAtual;
 }
 
+void MLP::salvarErro(int erroCount)
+{
+    this->erros[erroCount] = this->erroAtual;
+}
+
 void MLP::salvarErroCSV(int episodioCount)
 {
     string nomeArquivo = "Erros(" + to_string(episodioCount) + ")" + ".csv";
     salvarCSV(nomeArquivo, "Erros", this->erros);
 }
 
-void MLP::salvarErroQuaMedCSV(string &nomeArquivo, vector<vector<double>> dadosErroQuadMed)
+void MLP::salvarErroQuaMedCSV(string &nomeArquivo, vector<double> dadosErroQuadMed)
 {
     salvarCSV(nomeArquivo, "Erro Quadrático Médio/Época", dadosErroQuadMed);
 }

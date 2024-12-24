@@ -32,10 +32,11 @@ class MLP
 		void mostrarSaida(vector<double> entradaAtual);
 		void mostrarPesos();
 		void calcularErro(Neuronio &n, double &saidaDesejada);
+		void calcularErro(double &saida, double &saidaDesejada);
 		void calcularMediaErro();
 		void calcularErroQuadratico();
 		void calcularErroQuadraticoMedio(double erroQuadratico, size_t numDados);
-		void calcularErroRelativoMed(vector<double> &saidaDesejada);
+		void calcularErroRelativoMedio(vector<double> &saidaDesejada);
 		void calcularVarianciaErro();
 		void calcularGradienteNeuronioOculto(int &numCalculoGradienteAtual);
 		void calcularGradienteNeuronioFinal(Neuronio &n);
@@ -47,8 +48,9 @@ class MLP
 					 int &IDtreinamento);
 		void testarRede(vector<vector<double>> &dadosEntrada, 
 				        vector<vector<double>> &saidasDesejadas);	
-		void salvarErroQuaMedCSV(string &nomeArquivo, vector<vector<double>> dadosErroQuadMed);
+		void salvarErroQuaMedCSV(string &nomeArquivo, vector<double> dadosErroQuadMed);
 		void salvarErro();
+		void salvarErro(int erroCount);
 		void salvarErroCSV(int episodioCount);
 };
 
