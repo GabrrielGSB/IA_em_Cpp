@@ -20,16 +20,17 @@ int main()
     
     for (int i = 0; i < 1; i++)
     {    
-        MLP rede({4,15,3}, 0.1, 5000, 1e-6, "sigmoide");
+        MLP rede({4,15,3}, 0.1, 1000, 1e-6, "sigmoide");
 
         rede.treinar(dadosEntradaTreinamento, 
                      saidasDesejadasTreinamento, 
-                     "erroMinimo", "momentum", 0.1);
+                     "erroMinimo", "momentum", 4.15e-5);
 
         // rede.testarRede(dadosEntradaValidacao, 
         //                 saidasDesejadasValidacao);
     }
     // :)
+    //4.15 sweet spot
     return 0;
 }
 

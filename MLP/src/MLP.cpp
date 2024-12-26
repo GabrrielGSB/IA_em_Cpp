@@ -360,6 +360,8 @@ void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDeseja
     {
         //------------ Primeira Parte do BackPropagation (momentum)-------------------
         int neuronioCount = 0;
+        // funcAux::print3DMatrix(this->pesosCamadasOld);
+        int c = 0;
         for (Neuronio &ni : this->rede.back())
         {
             calcularErro(ni, saidaDesejada[neuronioCount]);
@@ -376,20 +378,26 @@ void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDeseja
             int pesoCount = 0;
             for (double &peso : ni.pesos)
             {
+                // printf("peso: %.8f\n", peso);
                 if (pesoBias)
                 {
                     peso = peso + 
-                           (this->momentum * (peso - this->pesosCamadasOld.back()[neuronioCount][pesoCount])) -
-                           this->taxaAprendizado * ni.gradienteLocal;
+                           this->taxaAprendizado * 
+                           ni.gradienteLocal;
+                    peso += this->momentum * (peso - this->pesosCamadasOld.back()[neuronioCount][pesoCount]);
 
                     pesoBias = false;
                 }
                 else
                 {
-                    // printf("Peso: %.4f (%d)(%d)\n", this->pesosCamadasOld.back()[neuronioCount][pesoCount], neuronioCount, pesoCount);
                     peso = peso + 
-                           (this->momentum * (peso - this->pesosCamadasOld.back()[neuronioCount][pesoCount])) -
+                           this->taxaAprendizado * 
+                           ni.gradienteLocal * 
                            this->saidasCamadas[saidasCamadas.size() - 2][pesoCount]; 
+
+                    // printf("peso: %.8f\n", this->pesosCamadasOld.back()[neuronioCount][pesoCount]);
+                    // printf("%.8f : %d\n", (this->momentum * (peso - this->pesosCamadasOld.back()[neuronioCount][pesoCount])), c++);
+                    peso += this->momentum * (peso - this->pesosCamadasOld.back()[neuronioCount][pesoCount]);
 
                     pesoCount++;
                 }
@@ -406,7 +414,6 @@ void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDeseja
         for (size_t i = 0; i < (this->rede.size() - 1); i++) 
         {
             calcularGradienteNeuronioOculto(numCalculoGradienteAtual);
-
             //-------------- Atualização dos pesos das camadas ocultas ---------------
             int neuronioCount = 0;
             for (Neuronio &ni : this->rede[this->rede.size() - numCalculoGradienteAtual - 1])
@@ -425,38 +432,39 @@ void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDeseja
                     if (pesoBias)
                     {
                         peso = peso +
-                               this->momentum * (peso - pesosCamadasOld[this->rede.size()-2-i][neuronioCount][pesoCount]) - 
                                this->taxaAprendizado *
                                ni.gradienteLocal;
+
+                        peso += this->momentum * (peso - pesosCamadasOld[this->rede.size()-2-i][neuronioCount][pesoCount]);
                         
                         pesoBias = false;
                     }
                     else if (funcAux::checarIndiceCamadaSaida(this->saidasCamadas, numCalculoGradienteAtual))
                     {
                         peso = peso +
-                               this->momentum * (peso - pesosCamadasOld[this->rede.size()-2-i][neuronioCount][pesoCount]) - 
                                this->taxaAprendizado * 
                                ni.gradienteLocal     *
                                this->saidasCamadas[saidasCamadas.size() - 2 - numCalculoGradienteAtual][numSaidaCount];
+
+                        peso += this->momentum * (peso - pesosCamadasOld[this->rede.size()-2-i][neuronioCount][pesoCount]);
                     }
                     else 
                     {
                         peso = peso + 
-                               this->momentum * (peso - pesosCamadasOld[this->rede.size()-2-i][neuronioCount][pesoCount]) - 
                                this->taxaAprendizado * 
                                ni.gradienteLocal     *
                                dadoEntrada[numSaidaCount];
+
+                        peso += this->momentum * (peso - pesosCamadasOld[this->rede.size()-2-i][neuronioCount][pesoCount]);
                     }
                     pesoCount++;
                 }
                 neuronioCount++;
             }
             //------------------------------------------------------------------------
-
             numCalculoGradienteAtual++;
         }
         //----------------------------------------------------------------------------
-        
         salvarPesos();
     }
 }
@@ -467,24 +475,35 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
                   double momentum)
 {
     this->momentum = momentum;
+
     this->numDados = dadosEntrada.size();
     this->erros.resize(this->numDados * this->numSaidas);   
     bool atualizarMatrizPesos = false;
 
-    salvarPesos();
+    zerarPesos();
     this->pesosCamadasOld = this->pesosCamadas;
     vector<vector<vector<double>>> pesosCamadasTemp = pesosCamadasOld;
+    // funcAux::print3DMatrix(this->pesosCamadasOld);
+
 
 
     // --------------------- Loop de treinamento -----------------------
     // Itera sobre o número de episódios totais
     if (mode == "numeroEpisodios")
     {
+        mostrarPesos();
         for (int i = 0; i < this->numEpisodiosTotais; i++)
         {
-            // Itera sobre os dados de entrada
+            zerarPesos();
+            this->pesosCamadasOld = this->pesosCamadas;
+            vector<vector<vector<double>>> pesosCamadasTemp = pesosCamadasOld;
+            
+            
             for (size_t j = 0; j < dadosEntrada.size(); j++)
             {
+                // if (j == 115) funcAux::print3DMatrix(this->pesosCamadasOld);
+                // if (j == 116) funcAux::print3DMatrix(this->pesosCamadasOld);
+
                 feedFoward(dadosEntrada[j]);
                 backPropagation(dadosEntrada[j], saidasDesejadas[j], backPropagationMode);
 
@@ -494,6 +513,8 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
                 else                              atualizarMatrizPesos = true;
             }
         }
+        mostrarPesos();
+        // funcAux::print3DMatrix(this->pesosCamadas);
     }
     else if (mode  == "erroMinimo")
     {
@@ -514,7 +535,6 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
                 pesosCamadasTemp = this->pesosCamadas;
                 if (atualizarMatrizPesos == true) pesosCamadasOld = pesosCamadasTemp;
                 else                             atualizarMatrizPesos = true;
-            funcAux::print3DMatrix(this->pesosCamadas);
             }
 
             this->variacaoErro = abs(this->erroQuadraticoMedio - erroQuadraticoMedioOld);
@@ -569,6 +589,32 @@ void MLP::testarRede(vector<vector<double>> &dadosEntrada, vector<vector<double>
     calcularVarianciaErro();
 
     printf("Erro Relativo Médio do Conjunto de Validação: %.4f%% \n", this->erroRelativoMedio);
+}
+
+void MLP::zerarPesos()
+{
+    this->pesosCamadas.resize(this->rede.size());
+
+    int camadaCount = 0;
+    for (vector<Neuronio> &camada : this->rede) 
+    {
+        this->pesosCamadas[camadaCount].resize(camada.size());
+
+        int neuronioCount = 0;
+        for (Neuronio &ni : camada)
+        {
+            this->pesosCamadas[camadaCount][neuronioCount].resize(ni.pesos.size());
+
+            int pesoCount = 0;
+            for(double &peso : ni.pesos)
+            {
+                this->pesosCamadas[camadaCount][neuronioCount][pesoCount] = 0;
+                pesoCount++;
+            }
+            neuronioCount++;
+        }
+        camadaCount++;
+    }
 }
 
 void MLP::salvarPesos()
