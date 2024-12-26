@@ -3,6 +3,7 @@
 namespace funcAux
 {
     bool checarIndiceCamadaSaida(vector<vector<double>> &saidasCamadas, int &numCalculoGradienteAtual);
+    void print3DMatrix(const std::vector<std::vector<std::vector<double>>>& matrix);
 }
 
 /*  
@@ -26,6 +27,7 @@ MLP::MLP(vector<int> estruturaRede, double taxaAprendizado,
     this->somaErro = 0;
     this->variacaoErro = 1;
     this->erroCount = 0;
+    this->momentum = 0;
 
     /*
     Esse constrututor (MLP) inicializa a rede com a estrutura definida pelo usuário,
@@ -244,131 +246,252 @@ void MLP::feedFoward(vector<double> dadosEntrada)
     }
 }
 
-void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDesejada)
+void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDesejada, string mode)
 {
     /* 
     O backpropagation é dividido em duas partes:
         ->Atualização de pesos da camada de saída
         ->Atualização de pesos das camadas ocultas 
     */
-    
+
     /* 
     numCalculoGradienteAtual: Número de cálculos de gradiente que serão feitos para as camadas ocultas.
      -> ele começa em 1, pois a primeira camada oculta é a penúltima camada da rede.
      -> tem o propósito de pegar a camada oculta correta de acordo com o número de cálculos de gradiente.
-    erroAtual: usado para calcular a condição de parada pelo erro.
     */
     int numCalculoGradienteAtual = 1;
+    this->erroCount = 0;
 
-    //---------------- Primeira Parte do BackPropagation -------------------------
-    int neuronioCount = 0;
-    for (Neuronio &ni : this->rede.back())
+    if (mode == "" || mode == "classico")
     {
-        calcularErro(ni, saidaDesejada[neuronioCount]);
-        salvarErro();
-
-        calcularErroQuadratico();
-        
-        calcularGradienteNeuronioFinal(ni);
-
-        bool pesoBias = true;
-
-        //-------------- Atualização dos pesos da camada de saída ----------------
-        // Itera sobre os pesos do neurônio
-        int pesoCount = 0;
-        for (double &peso : ni.pesos)
+        //------------ Primeira Parte do BackPropagation (clássico)-------------------
+        int neuronioCount = 0;
+        for (Neuronio &ni : this->rede.back())
         {
-            if (pesoBias)
-            {
-                peso = peso + 
-                       this->taxaAprendizado * 
-                       ni.gradienteLocal;
-                pesoBias = false;
-            }
-            else
-            {
-                peso = peso + 
-                       this->taxaAprendizado * 
-                       ni.gradienteLocal * 
-                       this->saidasCamadas[saidasCamadas.size() - 2][pesoCount]; 
+            calcularErro(ni, saidaDesejada[neuronioCount]);
+            salvarErro();
 
-                pesoCount++;
-            }
-        }
-        //------------------------------------------------------------------------
-        neuronioCount++;
-        this->erroCount++;
-    }
-    calcularErroQuadraticoMedio(this->erroQuadratico, this->numDados);
-    //----------------------------------------------------------------------------
+            calcularErroQuadratico();
+            
+            calcularGradienteNeuronioFinal(ni);
 
-    //---------------- Segunda Parte do BackPropagation --------------------------
-    //Itera sobre o número de camadas ocultas (todas menos a camada de saída)
-    for (size_t i = 0; i < (this->rede.size() - 1); i++) 
-    {
-        calcularGradienteNeuronioOculto(numCalculoGradienteAtual);
-
-        //-------------- Atualização dos pesos das camadas ocultas ---------------
-        for (Neuronio &ni : this->rede[this->rede.size() - numCalculoGradienteAtual - 1])
-        {
-            /*
-            numSaidaCount: é usado para pegar a saída correta que liga o neurônio atual
-            */
-            int numSaidaCount = -1;
             bool pesoBias = true;
 
+            //-------------- Atualização dos pesos da camada de saída ----------------
+            // Itera sobre os pesos do neurônio
+            int pesoCount = 0;
             for (double &peso : ni.pesos)
             {
-                if (!pesoBias) numSaidaCount++;
-
                 if (pesoBias)
                 {
-                    peso = peso +
-                           this->taxaAprendizado * 
-                           ni.gradienteLocal;
+                    peso = peso + 
+                        this->taxaAprendizado * 
+                        ni.gradienteLocal;
+
                     pesoBias = false;
                 }
-                else if (funcAux::checarIndiceCamadaSaida(this->saidasCamadas, numCalculoGradienteAtual))
+                else
                 {
                     peso = peso + 
-                           this->taxaAprendizado * 
-                           ni.gradienteLocal     *
-                           this->saidasCamadas[saidasCamadas.size() - 2 - numCalculoGradienteAtual][numSaidaCount];
-                }
-                else 
-                {
-                    peso = peso + 
-                           this->taxaAprendizado * 
-                           ni.gradienteLocal     *
-                           dadoEntrada[numSaidaCount];
+                        this->taxaAprendizado * 
+                        ni.gradienteLocal * 
+                        this->saidasCamadas[saidasCamadas.size() - 2][pesoCount]; 
+
+                    pesoCount++;
                 }
             }
+            //------------------------------------------------------------------------
+            neuronioCount++;
+            this->erroCount++;
         }
-        //------------------------------------------------------------------------
+        calcularErroQuadraticoMedio(this->erroQuadratico, this->numDados);
+        //----------------------------------------------------------------------------
+        
+        //------------ Segunda Parte do BackPropagation (clássico) ------------------
+        //Itera sobre o número de camadas ocultas (todas menos a camada de saída)
+        for (size_t i = 0; i < (this->rede.size() - 1); i++) 
+        {
+            calcularGradienteNeuronioOculto(numCalculoGradienteAtual);
 
-        numCalculoGradienteAtual++;
+            //-------------- Atualização dos pesos das camadas ocultas ---------------
+            for (Neuronio &ni : this->rede[this->rede.size() - numCalculoGradienteAtual - 1])
+            {
+                /*
+                numSaidaCount: é usado para pegar a saída correta que liga o neurônio atual
+                */
+                int numSaidaCount = -1;
+                bool pesoBias = true;
+
+                for (double &peso : ni.pesos)
+                {
+                    if (!pesoBias) numSaidaCount++;
+
+                    if (pesoBias)
+                    {
+                        peso = peso +
+                            this->taxaAprendizado * 
+                            ni.gradienteLocal;
+                        pesoBias = false;
+                    }
+                    else if (funcAux::checarIndiceCamadaSaida(this->saidasCamadas, numCalculoGradienteAtual))
+                    {
+                        peso = peso + 
+                            this->taxaAprendizado * 
+                            ni.gradienteLocal     *
+                            this->saidasCamadas[saidasCamadas.size() - 2 - numCalculoGradienteAtual][numSaidaCount];
+                    }
+                    else 
+                    {
+                        peso = peso + 
+                            this->taxaAprendizado * 
+                            ni.gradienteLocal     *
+                            dadoEntrada[numSaidaCount];
+                    }
+                }
+            }
+            //------------------------------------------------------------------------
+
+            numCalculoGradienteAtual++;
+        }
+        //----------------------------------------------------------------------------
     }
-    //----------------------------------------------------------------------------
+
+    if (mode == "momentum")
+    {
+        //------------ Primeira Parte do BackPropagation (momentum)-------------------
+        int neuronioCount = 0;
+        for (Neuronio &ni : this->rede.back())
+        {
+            calcularErro(ni, saidaDesejada[neuronioCount]);
+            salvarErro();
+
+            calcularErroQuadratico();
+            
+            calcularGradienteNeuronioFinal(ni);
+
+            bool pesoBias = true;
+
+            //-------------- Atualização dos pesos da camada de saída ----------------
+            // Itera sobre os pesos do neurônio
+            int pesoCount = 0;
+            for (double &peso : ni.pesos)
+            {
+                if (pesoBias)
+                {
+                    peso = peso + 
+                           (this->momentum * (peso - this->pesosCamadasOld.back()[neuronioCount][pesoCount])) -
+                           this->taxaAprendizado * ni.gradienteLocal;
+
+                    pesoBias = false;
+                }
+                else
+                {
+                    // printf("Peso: %.4f (%d)(%d)\n", this->pesosCamadasOld.back()[neuronioCount][pesoCount], neuronioCount, pesoCount);
+                    peso = peso + 
+                           (this->momentum * (peso - this->pesosCamadasOld.back()[neuronioCount][pesoCount])) -
+                           this->saidasCamadas[saidasCamadas.size() - 2][pesoCount]; 
+
+                    pesoCount++;
+                }
+            }
+            //------------------------------------------------------------------------
+            neuronioCount++;
+            this->erroCount++;
+        }
+        calcularErroQuadraticoMedio(this->erroQuadratico, this->numDados);
+        //----------------------------------------------------------------------------
+
+        //------------ Segunda Parte do BackPropagation (momentum) ------------------
+        //Itera sobre o número de camadas ocultas (todas menos a camada de saída)
+        for (size_t i = 0; i < (this->rede.size() - 1); i++) 
+        {
+            calcularGradienteNeuronioOculto(numCalculoGradienteAtual);
+
+            //-------------- Atualização dos pesos das camadas ocultas ---------------
+            int neuronioCount = 0;
+            for (Neuronio &ni : this->rede[this->rede.size() - numCalculoGradienteAtual - 1])
+            {
+                /*
+                numSaidaCount: é usado para pegar a saída correta que liga o neurônio atual
+                */
+                int numSaidaCount = -1;
+                bool pesoBias = true;
+
+                int pesoCount = 0;
+                for (double &peso : ni.pesos)
+                {
+                    if (!pesoBias) numSaidaCount++;
+
+                    if (pesoBias)
+                    {
+                        peso = peso +
+                               this->momentum * (peso - pesosCamadasOld[this->rede.size()-2-i][neuronioCount][pesoCount]) - 
+                               this->taxaAprendizado *
+                               ni.gradienteLocal;
+                        
+                        pesoBias = false;
+                    }
+                    else if (funcAux::checarIndiceCamadaSaida(this->saidasCamadas, numCalculoGradienteAtual))
+                    {
+                        peso = peso +
+                               this->momentum * (peso - pesosCamadasOld[this->rede.size()-2-i][neuronioCount][pesoCount]) - 
+                               this->taxaAprendizado * 
+                               ni.gradienteLocal     *
+                               this->saidasCamadas[saidasCamadas.size() - 2 - numCalculoGradienteAtual][numSaidaCount];
+                    }
+                    else 
+                    {
+                        peso = peso + 
+                               this->momentum * (peso - pesosCamadasOld[this->rede.size()-2-i][neuronioCount][pesoCount]) - 
+                               this->taxaAprendizado * 
+                               ni.gradienteLocal     *
+                               dadoEntrada[numSaidaCount];
+                    }
+                    pesoCount++;
+                }
+                neuronioCount++;
+            }
+            //------------------------------------------------------------------------
+
+            numCalculoGradienteAtual++;
+        }
+        //----------------------------------------------------------------------------
+        
+        salvarPesos();
+    }
 }
 
 void MLP::treinar(vector<vector<double>> &dadosEntrada, 
                   vector<vector<double>> &saidasDesejadas,
-                  string mode, int &IDtreinamento)
+                  string mode, string backPropagationMode,
+                  double momentum)
 {
+    this->momentum = momentum;
     this->numDados = dadosEntrada.size();
     this->erros.resize(this->numDados * this->numSaidas);   
+    bool atualizarMatrizPesos = false;
+
+    salvarPesos();
+    this->pesosCamadasOld = this->pesosCamadas;
+    vector<vector<vector<double>>> pesosCamadasTemp = pesosCamadasOld;
+
+
     // --------------------- Loop de treinamento -----------------------
     // Itera sobre o número de episódios totais
     if (mode == "numeroEpisodios")
     {
         for (int i = 0; i < this->numEpisodiosTotais; i++)
         {
-           
             // Itera sobre os dados de entrada
             for (size_t j = 0; j < dadosEntrada.size(); j++)
             {
                 feedFoward(dadosEntrada[j]);
-                backPropagation(dadosEntrada[j], saidasDesejadas[j]);
+                backPropagation(dadosEntrada[j], saidasDesejadas[j], backPropagationMode);
+
+                pesosCamadasTemp = this->pesosCamadas;
+                
+                if (atualizarMatrizPesos == true) this->pesosCamadasOld = pesosCamadasTemp;
+                else                              atualizarMatrizPesos = true;
             }
         }
     }
@@ -386,7 +509,12 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
             for (size_t j = 0; j < dadosEntrada.size(); j++)
             {
                 feedFoward(dadosEntrada[j]);
-                backPropagation(dadosEntrada[j], saidasDesejadas[j]);
+                backPropagation(dadosEntrada[j], saidasDesejadas[j], backPropagationMode);
+
+                pesosCamadasTemp = this->pesosCamadas;
+                if (atualizarMatrizPesos == true) pesosCamadasOld = pesosCamadasTemp;
+                else                             atualizarMatrizPesos = true;
+            funcAux::print3DMatrix(this->pesosCamadas);
             }
 
             this->variacaoErro = abs(this->erroQuadraticoMedio - erroQuadraticoMedioOld);
@@ -395,17 +523,16 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
 
             episodioCount++;
 
-        if (episodioCount >= 1e4) break;
+        if (episodioCount >= 5e3) break;
         }
 
-        string nomeArquivo = "ErroQuadMed(" + to_string(IDtreinamento) + ")" + ".csv";
-        salvarErroQuaMedCSV(nomeArquivo, dadosErroQuadMed);
+        // string nomeArquivo = "ErroQuadMed(" + to_string(IDtreinamento) + ")" + ".csv";
+        // salvarErroQuaMedCSV(nomeArquivo, dadosErroQuadMed);
         
         printf("\nTreinamento terminou em %d episódios\n", episodioCount);
-        // calcularVarianciaErro();
+        calcularVarianciaErro();
     }
     //------------------------------------------------------------------
-
 }
 
 void MLP::testarRede(vector<vector<double>> &dadosEntrada, vector<vector<double>> &saidasDesejadas)
@@ -444,6 +571,25 @@ void MLP::testarRede(vector<vector<double>> &dadosEntrada, vector<vector<double>
     printf("Erro Relativo Médio do Conjunto de Validação: %.4f%% \n", this->erroRelativoMedio);
 }
 
+void MLP::salvarPesos()
+{
+    this->pesosCamadas.resize(this->rede.size());
+
+    int camadaCount = 0;
+    for (vector<Neuronio> &camada : this->rede) 
+    {
+        this->pesosCamadas[camadaCount].resize(camada.size());
+
+        int neuronioCount = 0;
+        for (Neuronio &ni : camada)
+        {
+            this->pesosCamadas[camadaCount][neuronioCount] = ni.pesos;
+            neuronioCount++;
+        }
+        camadaCount++;
+    }
+}
+
 void MLP::salvarErro()
 {
     this->erros[this->erroCount] = this->erroAtual;
@@ -476,5 +622,22 @@ namespace funcAux
 
         if (camadaSaidaIndex >= saidasCamadas.size()) return false; // Primeira camada oculta
         else                                          return true;  // Camadas ocultas seguintes
+    }
+
+    void print3DMatrix(const std::vector<std::vector<std::vector<double>>>& matrix) 
+    {
+        for (size_t i = 0; i < matrix.size(); ++i) 
+        {
+            std::cout << "Layer " << i << ":\n";
+            for (size_t j = 0; j < matrix[i].size(); ++j) 
+            {
+                for (size_t k = 0; k < matrix[i][j].size(); ++k) 
+                {
+                    std::cout << matrix[i][j][k] << " ";
+                }
+                std::cout << "\n";
+            }
+            std::cout << "----------\n";
+        }
     }
 }

@@ -20,15 +20,14 @@ int main()
     
     for (int i = 0; i < 1; i++)
     {    
-        MLP rede({4,15,3}, 0.1, 1000, 1e-6, "sigmoide");
+        MLP rede({4,15,3}, 0.1, 5000, 1e-6, "sigmoide");
 
         rede.treinar(dadosEntradaTreinamento, 
                      saidasDesejadasTreinamento, 
-                     "erroMinimo", 
-                     i);
+                     "erroMinimo", "momentum", 0.1);
 
-        rede.testarRede(dadosEntradaValidacao, 
-                        saidasDesejadasValidacao);
+        // rede.testarRede(dadosEntradaValidacao, 
+        //                 saidasDesejadasValidacao);
     }
     // :)
     return 0;
