@@ -81,7 +81,6 @@ void lerCSV(const string &arquivo, int numEntradas,
     arquivoCSV.close();
 }
 
-
 void salvarCSV(const string &nomeArquivo, const string &nomesColunas,
                const vector<vector<double>> &dados)
 {
@@ -136,3 +135,77 @@ void salvarCSV(const string &nomeArquivo, const string &nomesColunas,
     // printf("Arquivo salvo com sucesso em: %s.csv", nomeArquivo);
     // --------------------------------------------------
 }
+
+void modificarCSV(const string& inputFilePath, const string& outputFilePath, int x, int y)
+{
+    ifstream inputFile(inputFilePath);
+    if (!inputFile.is_open()) 
+    {
+        throw runtime_error("Erro ao abrir o arquivo de entrada.");
+    }
+
+    vector<double> data;
+    string line;
+
+    getline(inputFile, line);
+
+    // Lendo todos os dados do arquivo de entrada
+    while (getline(inputFile, line)) 
+    {
+    istringstream iss(line);
+        double value;
+        if (!(iss >> value)) 
+        {
+            throw runtime_error("Erro ao ler um valor no arquivo CSV.");
+        }
+        data.push_back(value);
+    }
+    inputFile.close();
+
+    // Garantir que o número de dados é suficiente
+    if (data.size() < static_cast<size_t>(x + y)) 
+    {
+        throw runtime_error("Dados insuficientes para o número de entradas e saídas especificado.");
+    }
+
+    // Abrindo o arquivo de saída
+    ofstream outputFile(outputFilePath);
+    if (!outputFile.is_open()) 
+    {
+        throw runtime_error("Erro ao abrir o arquivo de saída.");
+    }
+
+    // Criando o formato para MLP
+    for (size_t i = 0; i <= data.size() - static_cast<size_t>(x + y); ++i) 
+    {
+        // Escrever as colunas de entrada
+        for (int j = 0; j < x; ++j) 
+        {
+            outputFile << data[i + j];
+            if (j < x - 1) outputFile << ",";
+        }
+
+        outputFile << ","; // Separador entre entradas e saídas
+
+        // Escrever as colunas de saída
+        for (int j = 0; j < y; ++j) 
+        {
+            outputFile << data[i + x + j];
+            if (j < y - 1) outputFile << ",";
+        }
+
+        outputFile << "\n"; // Próxima linha
+    }
+
+    outputFile.close();
+    std::cout << "Arquivo convertido com sucesso e salvo em: " << outputFilePath << std::endl;
+}
+
+
+
+
+
+
+
+
+

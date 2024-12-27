@@ -1,5 +1,6 @@
 #include "../include/MLP.h"
 #include "../../Comum/include/myFuncoes.h"
+#include <chrono>
 
 
 int main()
@@ -10,29 +11,75 @@ int main()
     vector<vector<double>> saidasDesejadasValidacao;
     vector<double> saidaDesejada;
 
-    lerCSV("Dados/dadosTreinamento1.csv", 4, 
+    lerCSV("Dados/dadosTreinamento4.csv", 5, 
             dadosEntradaTreinamento, 
             saidasDesejadasTreinamento);
 
-    lerCSV("Dados/dadosValidacao1.csv", 4, 
-            dadosEntradaValidacao, 
-            saidasDesejadasValidacao);
-    
-    for (int i = 0; i < 1; i++)
-    {    
-        MLP rede({4,15,3}, 0.1, 1000, 1e-6, "sigmoide");
+    // lerCSV("Dados/dadosValidacao1.csv", 4, 
+    //         dadosEntradaValidacao, 
+    //         saidasDesejadasValidacao);
 
-        rede.treinar(dadosEntradaTreinamento, 
-                     saidasDesejadasTreinamento, 
-                     "erroMinimo", "momentum", 4.15e-5);
+    modificarCSV("Dados/dadosBrutos.csv","dadosValidacao2.csv",5,1);
 
-        // rede.testarRede(dadosEntradaValidacao, 
-        //                 saidasDesejadasValidacao);
-    }
-    // :)
-    //4.15 sweet spot
+    // auto start = chrono::high_resolution_clock::now();
+    // for (int i = 0; i < 1; i++)
+    // {    
+    //     printf("\n");
+    //     MLP rede({15,25,1}, 0.1, 1000, 0.5e-6, "sigmoide");
+
+    //     rede.treinar(dadosEntradaTreinamento, 
+    //                  saidasDesejadasTreinamento, 
+    //                  "erroMinimo", "momentum", 4.15e-5, i);
+
+    //     // rede.testarRede(dadosEntradaValidacao, 
+    //     //                 saidasDesejadasValidacao);
+
+    // }
+
+    // auto end = chrono::high_resolution_clock::now();
+    // auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
+    // printf("\nTempo de execução total: %.5f segundos\n", (double)(duration.count()/1e6));
+    // // :)
+    // //4.15 sweet spot
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// rede.transferirPesos(rede.primeirosPesosCamadas);
+// rede.reiniciarRede();
+
+// printf("\n");
+
+// auto start2 = chrono::high_resolution_clock::now();
+
+// printf("Treinamento com a adição do Momentum:");
+// rede.treinar(dadosEntradaTreinamento, 
+//              saidasDesejadasTreinamento, 
+//              "erroMinimo", "momentum", 4.15e-5, i+1);
+
+// auto end2 = chrono::high_resolution_clock::now();
+// auto duration2 = chrono::duration_cast<chrono::microseconds>(end2 - start2);
+// printf("Tempo de execução total do segundo algoritmo: %.5f segundos\n", (double)(duration2.count()/1e6));
+
+// rede.testarRede(dadosEntradaValidacao, 
+//                 saidasDesejadasValidacao);
 
 
 

@@ -19,6 +19,7 @@ class MLP
 
 		vector<vector<vector<double>>> pesosCamadas;
 		vector<vector<vector<double>>> pesosCamadasOld;
+		vector<vector<vector<double>>> primeirosPesosCamadas;
 		vector<vector<Neuronio>> rede;
 		vector<vector<double>> saidasCamadas;
 		vector<double> erros;
@@ -29,16 +30,16 @@ class MLP
 			   variancia;
 		int numEpisodiosTotais, 
 			numEntradas, numSaidas,
-			numDados, erroCount;
+			numDados, erroCount, numSucessos;
 		
 		void inicializarPesosRede(string modo);
 		void mostrarSaida(vector<double> entradaAtual);
 		void mostrarPesos();
+		void calcularSucesso(vector<vector<double>> &saidasDesejadas, int &saidaDesejadaCount);
 		void calcularErro(Neuronio &n, double &saidaDesejada);
 		void calcularErro(double &saida, double &saidaDesejada);
 		void calcularMediaErro();
-		void calcularErroQuadratico();
-		void calcularErroQuadraticoMedio(double erroQuadratico, size_t numDados);
+		void calcularErroQuadraticoMedio();
 		void calcularErroRelativoMedio(vector<double> &saidaDesejada);
 		void calcularVarianciaErro();
 		void calcularGradienteNeuronioOculto(int &numCalculoGradienteAtual);
@@ -53,7 +54,8 @@ class MLP
 					 vector<vector<double>> &saidasDesejadas,
 					 string mode,
 					 string backPropagationMode = "",
-					 double momentum = 0.0);
+					 double momentum = 0.0,
+					 int IDtreinamento = 0);
 
 		void testarRede(vector<vector<double>> &dadosEntrada, 
 				        vector<vector<double>> &saidasDesejadas);	
@@ -63,6 +65,8 @@ class MLP
 		void salvarErro();
 		void salvarErro(int erroCount);
 		void salvarErroCSV(int episodioCount);
+		void transferirPesos(vector<vector<vector<double>>> matrizPesos);
+		void reiniciarRede();
 };
 
 #endif

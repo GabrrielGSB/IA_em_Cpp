@@ -28,6 +28,7 @@ MLP::MLP(vector<int> estruturaRede, double taxaAprendizado,
     this->variacaoErro = 1;
     this->erroCount = 0;
     this->momentum = 0;
+    this->numSucessos = 0;
 
     /*
     Esse constrututor (MLP) inicializa a rede com a estrutura definida pelo usuário,
@@ -137,15 +138,10 @@ void MLP::calcularMediaErro()
     this->mediaErro = this->somaErro / (this->numDados * this->numSaidas);
 }
 
-void MLP::calcularErroQuadratico()
+void MLP::calcularErroQuadraticoMedio()
 {
-    this->erroQuadratico += 0.5 * pow((this->erroAtual), 2);
-}
-
-void MLP::calcularErroQuadraticoMedio(double erroQuadratico, size_t numDados)
-{
-    this->erroQuadraticoMedio += erroQuadratico / numDados;
-    this->erroQuadratico = 0;
+    this->erroQuadratico = 0.5 * pow((this->erroAtual), 2);
+    this->erroQuadraticoMedio += erroQuadratico / this->numDados;
 }
 
 void MLP::calcularErroRelativoMedio(vector<double> &saidaDesejada)
@@ -260,6 +256,7 @@ void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDeseja
      -> tem o propósito de pegar a camada oculta correta de acordo com o número de cálculos de gradiente.
     */
     int numCalculoGradienteAtual = 1;
+
     this->erroCount = 0;
 
     if (mode == "" || mode == "classico")
@@ -271,7 +268,7 @@ void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDeseja
             calcularErro(ni, saidaDesejada[neuronioCount]);
             salvarErro();
 
-            calcularErroQuadratico();
+            calcularErroQuadraticoMedio();
             
             calcularGradienteNeuronioFinal(ni);
 
@@ -304,7 +301,6 @@ void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDeseja
             neuronioCount++;
             this->erroCount++;
         }
-        calcularErroQuadraticoMedio(this->erroQuadratico, this->numDados);
         //----------------------------------------------------------------------------
         
         //------------ Segunda Parte do BackPropagation (clássico) ------------------
@@ -360,14 +356,12 @@ void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDeseja
     {
         //------------ Primeira Parte do BackPropagation (momentum)-------------------
         int neuronioCount = 0;
-        // funcAux::print3DMatrix(this->pesosCamadasOld);
-        int c = 0;
         for (Neuronio &ni : this->rede.back())
         {
             calcularErro(ni, saidaDesejada[neuronioCount]);
             salvarErro();
 
-            calcularErroQuadratico();
+            calcularErroQuadraticoMedio();
             
             calcularGradienteNeuronioFinal(ni);
 
@@ -406,7 +400,7 @@ void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDeseja
             neuronioCount++;
             this->erroCount++;
         }
-        calcularErroQuadraticoMedio(this->erroQuadratico, this->numDados);
+        
         //----------------------------------------------------------------------------
 
         //------------ Segunda Parte do BackPropagation (momentum) ------------------
@@ -472,7 +466,8 @@ void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDeseja
 void MLP::treinar(vector<vector<double>> &dadosEntrada, 
                   vector<vector<double>> &saidasDesejadas,
                   string mode, string backPropagationMode,
-                  double momentum)
+                  double momentum,
+                  int IDtreinamento)
 {
     this->momentum = momentum;
 
@@ -480,12 +475,12 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
     this->erros.resize(this->numDados * this->numSaidas);   
     bool atualizarMatrizPesos = false;
 
+    salvarPesos();
+    this->primeirosPesosCamadas = this->pesosCamadas;
+
     zerarPesos();
     this->pesosCamadasOld = this->pesosCamadas;
     vector<vector<vector<double>>> pesosCamadasTemp = pesosCamadasOld;
-    // funcAux::print3DMatrix(this->pesosCamadasOld);
-
-
 
     // --------------------- Loop de treinamento -----------------------
     // Itera sobre o número de episódios totais
@@ -501,9 +496,6 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
             
             for (size_t j = 0; j < dadosEntrada.size(); j++)
             {
-                // if (j == 115) funcAux::print3DMatrix(this->pesosCamadasOld);
-                // if (j == 116) funcAux::print3DMatrix(this->pesosCamadasOld);
-
                 feedFoward(dadosEntrada[j]);
                 backPropagation(dadosEntrada[j], saidasDesejadas[j], backPropagationMode);
 
@@ -514,7 +506,6 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
             }
         }
         mostrarPesos();
-        // funcAux::print3DMatrix(this->pesosCamadas);
     }
     else if (mode  == "erroMinimo")
     {
@@ -546,11 +537,11 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
         if (episodioCount >= 5e3) break;
         }
 
-        // string nomeArquivo = "ErroQuadMed(" + to_string(IDtreinamento) + ")" + ".csv";
-        // salvarErroQuaMedCSV(nomeArquivo, dadosErroQuadMed);
+        string nomeArquivo = "ErroQuadMed(" + to_string(IDtreinamento) + ")" + ".csv";
+        salvarErroQuaMedCSV(nomeArquivo, dadosErroQuadMed);
         
         printf("\nTreinamento terminou em %d episódios\n", episodioCount);
-        calcularVarianciaErro();
+        // calcularVarianciaErro();
     }
     //------------------------------------------------------------------
 }
@@ -565,30 +556,53 @@ void MLP::testarRede(vector<vector<double>> &dadosEntrada, vector<vector<double>
 
     this->erros.resize(numDados * this->numSaidas);
 
+   
     // --------------------- Loop de teste -----------------------
-    int saidaDesejadaCount = 0;
     printf("\nTeste da Rede:\n");
-    // Itera sobre os dados de entrada
+
+    int saidaDesejadaCount = 0;
     for (vector<double> entrada : dadosEntrada)
     {
         feedFoward(entrada);
-
-        calcularErro(this->saidasCamadas.back()[0], saidasDesejadas[saidaDesejadaCount][0]);
-        salvarErro(saidaDesejadaCount);
-
-        mostrarSaida(entrada);
-
-        calcularErroRelativoMedio(saidasDesejadas[saidaDesejadaCount]);
+        calcularSucesso(saidasDesejadas, saidaDesejadaCount);
         saidaDesejadaCount++;
+
+        // mostrarSaida(entrada);
+
+        // calcularErro(this->saidasCamadas.back()[0], saidasDesejadas[saidaDesejadaCount][0]);
+        // salvarErro(saidaDesejadaCount);
+
+        // calcularErroRelativoMedio(saidasDesejadas[saidaDesejadaCount]);
+        // printf("\n");
     }
+    printf("Precisão: %.3f%%\n", (((double)this->numSucessos / (double)(this->numSaidas*saidasDesejadas.size())) * 100));
     //------------------------------------------------------------------
-    this->erroRelativoMedio *= 100;
-    this->erroRelativoMedio /= this->numDados;
+    // this->erroRelativoMedio *= 100;
+    // this->erroRelativoMedio /= this->numDados;
 
-    calcularMediaErro();
-    calcularVarianciaErro();
+    // calcularMediaErro();
+    // calcularVarianciaErro();
 
-    printf("Erro Relativo Médio do Conjunto de Validação: %.4f%% \n", this->erroRelativoMedio);
+    // printf("Erro Relativo Médio do Conjunto de Validação: %.4f%% \n", this->erroRelativoMedio);
+}
+
+void MLP::calcularSucesso(vector<vector<double>> &saidasDesejadas, int &saidaDesejadaCount)
+{
+    vector<double> saidaAtual = this->saidasCamadas.back();
+
+    for (double &saida : saidaAtual) 
+    {
+        if (saida >= 0.5) saida = 1.0;
+        else              saida = 0.0;
+       
+    }
+
+    vector<double> saidaDesejada = saidasDesejadas[saidaDesejadaCount];
+
+    for (size_t i = 0; i < saidaDesejada.size(); i++)
+    {
+        if ((int)saidaAtual[i] == (int)saidaDesejada[i]) this->numSucessos++; 
+    }
 }
 
 void MLP::zerarPesos()
@@ -605,11 +619,9 @@ void MLP::zerarPesos()
         {
             this->pesosCamadas[camadaCount][neuronioCount].resize(ni.pesos.size());
 
-            int pesoCount = 0;
-            for(double &peso : ni.pesos)
+            for(size_t pesoCount = 0; pesoCount < ni.pesos.size(); pesoCount++)    
             {
                 this->pesosCamadas[camadaCount][neuronioCount][pesoCount] = 0;
-                pesoCount++;
             }
             neuronioCount++;
         }
@@ -657,6 +669,35 @@ void MLP::salvarErroQuaMedCSV(string &nomeArquivo, vector<double> dadosErroQuadM
     salvarCSV(nomeArquivo, "Erro Quadrático Médio/Época", dadosErroQuadMed);
 }
 
+void MLP::transferirPesos(vector<vector<vector<double>>> matrizPesos)
+{
+    int camadaCount = 0;
+    for (auto &camada : this->rede)
+    {
+        int neuronioCount = 0;
+        for (Neuronio &ni : camada)
+        {
+            ni.pesos = matrizPesos[camadaCount][neuronioCount];
+            neuronioCount++;
+        }
+        camadaCount++;
+    }
+}
+
+void MLP::reiniciarRede()
+{
+    this->erroQuadratico = 0;
+    this->erroQuadraticoMedio = 0;
+    this->variacaoErro = 1;
+    this->erroRelativoMedio = 0;
+    this->somaErro = 0;
+    this->variacaoErro = 1;
+    this->erroCount = 0;
+    this->momentum = 0;
+    this->numSucessos = 0;
+    this->saidasCamadas = {};
+}
+
 namespace funcAux
 {
     bool checarIndiceCamadaSaida(vector<vector<double>> &saidasCamadas, int &numCalculoGradienteAtual)
@@ -679,7 +720,7 @@ namespace funcAux
             {
                 for (size_t k = 0; k < matrix[i][j].size(); ++k) 
                 {
-                    std::cout << matrix[i][j][k] << " ";
+                    std::cout << setprecision(3) <<matrix[i][j][k] << " ";
                 }
                 std::cout << "\n";
             }
