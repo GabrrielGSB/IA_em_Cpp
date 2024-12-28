@@ -144,17 +144,12 @@ void MLP::calcularErroQuadraticoMedio()
     this->erroQuadraticoMedio += erroQuadratico / this->numDados;
 }
 
-void MLP::calcularErroRelativoMedio(vector<double> &saidaDesejada)
+void MLP::calcularErroRelativoMedio(double &saida, double &saidaDesejada)
 {
     /*
     Aplicação do cálculo Erro Absoluto Percentual Médio (MAPE) nos dados de validação.
     */
-    // --------------------- Loop de Cálculo da Precisão -----------------------
-    for (size_t j = 0; j < saidaDesejada.size(); j++)
-    {
-        this->erroRelativoMedio += abs((this->saidasCamadas.back()[j] - saidaDesejada[j]) / this->saidasCamadas.back()[j]);
-    }
-    //------------------------------------------------------------------
+    this->erroRelativoMedio += abs((saida - saidaDesejada) / saida);   
 }
 
 void MLP::calcularVarianciaErro()
@@ -164,7 +159,6 @@ void MLP::calcularVarianciaErro()
         this->variancia += pow((erro - this->mediaErro), 2);
     }
     this->variancia /= (this->numDados * this->numSaidas);
-    printf("Variância do erro: %.5f\n", variancia);
 }
 
 void MLP::calcularGradienteNeuronioFinal(Neuronio &n)
@@ -534,13 +528,13 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
 
             episodioCount++;
 
-        if (episodioCount >= 5e3) break;
+        if (episodioCount >= 20e3) break;
         }
 
         string nomeArquivo = "ErroQuadMed(" + to_string(IDtreinamento) + ")" + ".csv";
         salvarErroQuaMedCSV(nomeArquivo, dadosErroQuadMed);
         
-        printf("\nTreinamento terminou em %d episódios\n", episodioCount);
+        printf(" ->Treinamento terminou em %d episódios com erro quadrático médio de %.6f\n ", episodioCount, dadosErroQuadMed.back());
         // calcularVarianciaErro();
     }
     //------------------------------------------------------------------
@@ -548,42 +542,51 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
 
 void MLP::testarRede(vector<vector<double>> &dadosEntrada, vector<vector<double>> &saidasDesejadas)
 {
+    this->erroRelativoMedio = 0;
     this->erroAtual = 0;
     this->somaErro  = 0;
+    this->variancia = 0;
     this->mediaErro = 0;
 
     this->numDados = saidasDesejadas.size();
 
+    this->erros.clear();
     this->erros.resize(numDados * this->numSaidas);
 
    
     // --------------------- Loop de teste -----------------------
-    printf("\nTeste da Rede:\n");
+    printf("  ->Teste da Rede:\n");
 
     int saidaDesejadaCount = 0;
     for (vector<double> entrada : dadosEntrada)
     {
         feedFoward(entrada);
-        calcularSucesso(saidasDesejadas, saidaDesejadaCount);
+        printf("    *A saida é (%.4f) para um desejado de (%.4f)\n",this->saidasCamadas.back()[0], 
+                                                                    saidasDesejadas[saidaDesejadaCount][0]);
+
+        calcularErro(this->saidasCamadas.back()[0], saidasDesejadas[saidaDesejadaCount][0]);
+        calcularErroRelativoMedio(this->saidasCamadas.back()[0], saidasDesejadas[saidaDesejadaCount][0]);
+        salvarErro(saidaDesejadaCount);
+
         saidaDesejadaCount++;
 
         // mostrarSaida(entrada);
-
-        // calcularErro(this->saidasCamadas.back()[0], saidasDesejadas[saidaDesejadaCount][0]);
-        // salvarErro(saidaDesejadaCount);
-
-        // calcularErroRelativoMedio(saidasDesejadas[saidaDesejadaCount]);
-        // printf("\n");
+        // calcularSucesso(saidasDesejadas, saidaDesejadaCount);
     }
-    printf("Precisão: %.3f%%\n", (((double)this->numSucessos / (double)(this->numSaidas*saidasDesejadas.size())) * 100));
+    // printf("Precisão: %.3f%%\n", (((double)this->numSucessos / (double)(this->numSaidas*saidasDesejadas.size())) * 100));
     //------------------------------------------------------------------
-    // this->erroRelativoMedio *= 100;
-    // this->erroRelativoMedio /= this->numDados;
+    this->erroRelativoMedio /= this->numDados;
+    this->erroRelativoMedio *= 100;
 
-    // calcularMediaErro();
-    // calcularVarianciaErro();
+    calcularMediaErro();
+    calcularVarianciaErro();
 
-    // printf("Erro Relativo Médio do Conjunto de Validação: %.4f%% \n", this->erroRelativoMedio);
+    printf("\n");
+    printf("    *Erro Relativo Médio é: %.2f%% \n", this->erroRelativoMedio);
+    printf("    *A média do erro é: %.4f \n", this->mediaErro);
+    printf("    *A variância do erro é: %4f \n", this->variancia);
+    printf("\n");
+    printf("\n");
 }
 
 void MLP::calcularSucesso(vector<vector<double>> &saidasDesejadas, int &saidaDesejadaCount)

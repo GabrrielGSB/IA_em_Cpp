@@ -5,42 +5,93 @@
 
 int main()
 {
-    vector<vector<double>> dadosEntradaTreinamento;
-    vector<vector<double>> dadosEntradaValidacao;
-    vector<vector<double>> saidasDesejadasTreinamento;
-    vector<vector<double>> saidasDesejadasValidacao;
-    vector<double> saidaDesejada;
+    vector<vector<double>> dadosEntradaTreinamento1;
+    vector<vector<double>> dadosEntradaValidacao1;
+    vector<vector<double>> saidasDesejadasTreinamento1;
+    vector<vector<double>> saidasDesejadasValidacao1;
 
-    lerCSV("Dados/dadosTreinamento4.csv", 5, 
-            dadosEntradaTreinamento, 
-            saidasDesejadasTreinamento);
+    vector<vector<double>> dadosEntradaTreinamento2;
+    vector<vector<double>> dadosEntradaValidacao2;
+    vector<vector<double>> saidasDesejadasTreinamento2;
+    vector<vector<double>> saidasDesejadasValidacao2;
 
-    // lerCSV("Dados/dadosValidacao1.csv", 4, 
-    //         dadosEntradaValidacao, 
-    //         saidasDesejadasValidacao);
+    vector<vector<double>> dadosEntradaTreinamento3;
+    vector<vector<double>> dadosEntradaValidacao3;
+    vector<vector<double>> saidasDesejadasTreinamento3;
+    vector<vector<double>> saidasDesejadasValidacao3;
+ 
+ 
 
-    modificarCSV("Dados/dadosBrutos.csv","dadosValidacao2.csv",5,1);
+    lerCSV("Dados/dadosTreinamento2.csv", 5, 
+            dadosEntradaTreinamento1, 
+            saidasDesejadasTreinamento1);
 
-    // auto start = chrono::high_resolution_clock::now();
-    // for (int i = 0; i < 1; i++)
-    // {    
-    //     printf("\n");
-    //     MLP rede({15,25,1}, 0.1, 1000, 0.5e-6, "sigmoide");
+    lerCSV("Dados/dadosValidacao2.csv", 5, 
+            dadosEntradaValidacao1, 
+            saidasDesejadasValidacao1);
 
-    //     rede.treinar(dadosEntradaTreinamento, 
-    //                  saidasDesejadasTreinamento, 
-    //                  "erroMinimo", "momentum", 4.15e-5, i);
+    lerCSV("Dados/dadosTreinamento3.csv", 10, 
+            dadosEntradaTreinamento2, 
+            saidasDesejadasTreinamento2);
 
-    //     // rede.testarRede(dadosEntradaValidacao, 
-    //     //                 saidasDesejadasValidacao);
+    lerCSV("Dados/dadosValidacao3.csv", 10, 
+            dadosEntradaValidacao2, 
+            saidasDesejadasValidacao2);
 
-    // }
 
-    // auto end = chrono::high_resolution_clock::now();
-    // auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
-    // printf("\nTempo de execução total: %.5f segundos\n", (double)(duration.count()/1e6));
-    // // :)
-    // //4.15 sweet spot
+    lerCSV("Dados/dadosTreinamento4.csv", 15, 
+            dadosEntradaTreinamento3, 
+            saidasDesejadasTreinamento3);
+
+    lerCSV("Dados/dadosValidacao4.csv", 15, 
+            dadosEntradaValidacao3, 
+            saidasDesejadasValidacao3);
+
+    
+
+    auto start = chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < 3; i++)
+    {    
+        printf("\nRede 5 entradas 10 ocultos\n");
+        MLP rede1({5,10,1}, 0.1, 1, 0.5e-6, "sigmoide");
+
+        rede1.treinar(dadosEntradaTreinamento1, 
+                     saidasDesejadasTreinamento1, 
+                     "erroMinimo", "momentum", 1.3e-5, i);
+        rede1.testarRede(dadosEntradaValidacao1, 
+                        saidasDesejadasValidacao1);
+
+
+        printf("Rede 10 entradas 15 ocultos\n");
+        MLP rede2({10,15,1}, 0.1, 1000, 0.5e-6, "sigmoide");
+
+        rede2.treinar(dadosEntradaTreinamento2, 
+                     saidasDesejadasTreinamento2, 
+                     "erroMinimo", "momentum", 1.3e-5, i+3);
+        rede2.testarRede(dadosEntradaValidacao2, 
+                        saidasDesejadasValidacao2);
+
+
+        printf("rede 15 entradas 25 ocultos\n");
+        MLP rede3({15,25,1}, 0.1, 1000, 0.5e-6, "sigmoide");
+
+        rede3.treinar(dadosEntradaTreinamento3, 
+                     saidasDesejadasTreinamento3, 
+                     "erroMinimo", "momentum", 1.3e-5, i+6);
+        rede3.testarRede(dadosEntradaValidacao3, 
+                        saidasDesejadasValidacao3);
+
+        // printf("\n");
+
+        
+    }
+
+    auto end = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
+    printf("\nTempo de execução total: %.5f segundos\n", (double)(duration.count()/1e6));
+    // :)
+    //4.15 sweet spot
     return 0;
 }
 
@@ -58,7 +109,7 @@ int main()
 
 
 
-
+// modificarCSV("Dados/dadosBrutos.csv","dadosValidacao4.csv",15,1);
 
 
 

@@ -40,7 +40,7 @@ class MLP
 		void calcularErro(double &saida, double &saidaDesejada);
 		void calcularMediaErro();
 		void calcularErroQuadraticoMedio();
-		void calcularErroRelativoMedio(vector<double> &saidaDesejada);
+		void calcularErroRelativoMedio(double &saida, double &saidaDesejada);
 		void calcularVarianciaErro();
 		void calcularGradienteNeuronioOculto(int &numCalculoGradienteAtual);
 		void calcularGradienteNeuronioFinal(Neuronio &n);
