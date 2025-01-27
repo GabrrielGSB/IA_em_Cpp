@@ -1,5 +1,5 @@
 #include "../include/myFuncoes.h"
-#include "../../Perceptron/include/Perceptron.h"
+// #include "../../Perceptron/include/Perceptron.h"
 
 double gerarNumAleatorio()
 {
