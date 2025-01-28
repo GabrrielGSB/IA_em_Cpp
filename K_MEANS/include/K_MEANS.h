@@ -12,9 +12,11 @@ using namespace std;
 class kMeans
 {
     public:
-        kMeans(int numAgrupamentos, vector<vector<double>> &dadosEntrada);
-        bool aglomeradosFormados;
+        kMeans(int numEntradas, int numAgrupamentos, vector<vector<double>> &dadosEntrada);
+        
+        int numEntradas;
         int numAgrupamentos;
+        bool aglomeradosFormados;
         vector<double> variancias;
         vector<vector<double>> centros;
         vector<vector<double>> dadosEntrada;
@@ -22,8 +24,10 @@ class kMeans
 
         void preencherAgrupamentos();
         void atualizarCentros();
-        void calcularVariancia();
         void aplicarAlgoritmo();
+        void calcularVariancia();
+        void mostrarVariancias();
+        void mostrarCentrosObtidos();
 
 };
 

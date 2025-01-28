@@ -1,11 +1,13 @@
 #include "../include/K_MEANS.h"
 
-kMeans::kMeans(int numAgrupamentos, vector<vector<double>> &dadosEntrada) : 
+kMeans::kMeans(int numEntradas, int numAgrupamentos, vector<vector<double>> &dadosEntrada) : 
+               numEntradas(numEntradas),
                numAgrupamentos(numAgrupamentos),
                dadosEntrada(dadosEntrada)
 {
     this->aglomeradosFormados = false;    
     this->agrupamentos.resize(numAgrupamentos);
+    this->variancias.resize(numAgrupamentos);
 }
 
 void kMeans::atualizarCentros()
@@ -16,16 +18,22 @@ void kMeans::atualizarCentros()
     }
     else
     {
+        vector<double> somaPontosEntrada;
+        vector<double> novoCentro(this->numEntradas);
+
         int countAgrupamento = 0;
         for (auto &agrupamento : this->agrupamentos)
         {
-            double sumX = 0, sumY = 0;
+            somaPontosEntrada.clear();
+            somaPontosEntrada.resize(this->numEntradas);
+
             for (auto &ponto : agrupamento)
             {
-                sumX += ponto[0];
-                sumY += ponto[1];
+                for (int i = 0; i < int(ponto.size()); i++) somaPontosEntrada[i] += ponto[i];
             }
-            vector<double> novoCentro = {sumX/this->numAgrupamentos, sumY/this->numAgrupamentos};
+
+            for (int i = 0; i < int(agrupamento[0].size()); i++) novoCentro[i] = somaPontosEntrada[i] / this->numAgrupamentos;
+            
             this->centros[countAgrupamento] = novoCentro;
 
             countAgrupamento++;
@@ -77,25 +85,50 @@ void kMeans::aplicarAlgoritmo()
 
 void kMeans::calcularVariancia()
 {
-    vector<double> distancias(this->numAgrupamentos);
-    
-    for (vector<double> &dado : this->dadosEntrada)
+    int indiceAgrupamento = 0;
+    for (auto &agrupamento : this->agrupamentos)
     {
-        int indiceCentro = 0;
-        for (vector<double> &centro : this->centros)
+        
+        for (auto &ponto : agrupamento)
         {
-            vector<double> diferenca(dado.size());
+            vector<double> diferenca(ponto.size());
 
-            transform(dado.begin(), dado.end(), centro.begin(), diferenca.begin(), []
+            transform(ponto.begin(), ponto.end(), this->centros[indiceAgrupamento].begin(), diferenca.begin(), []
                      (double Xi, double Wi) { return Xi - Wi; });
 
-            distancias[indiceCentro] = inner_product(diferenca.begin(), diferenca.end(), 
-                                                     diferenca.begin(), 0.0);
-            
-            indiceCentro++;
+            this->variancias[indiceAgrupamento] += inner_product(diferenca.begin(), diferenca.end(), 
+                                                                 diferenca.begin(), 0.0);
         }
+        indiceAgrupamento++;
     }
-    for (auto i : distancias) printf("%.3f\n", i);
 }
 
+void kMeans::mostrarVariancias()
+{
+    int indiceVariancia = 0;
+    for (auto &variancia : this->variancias)
+    { 
+        printf("Variância do Neurônio Oculto %d: %.3f\n", indiceVariancia+1, variancia);
+        indiceVariancia++;
+    }
+}
+
+void kMeans::mostrarCentrosObtidos()
+{
+    printf("\n");
+
+    int indiceCentro = 0;
+    for (auto &centro : this->centros)
+    {
+        printf("A centroide %d está em ", indiceCentro+1);
+        
+        for (auto &valor : centro)
+        {
+            if (valor == centro.back()) printf("%.2f)", valor);
+            else                        printf("(%.2f, ", valor);
+        } 
+        printf("\n");
+        indiceCentro++;
+    }
+}
 

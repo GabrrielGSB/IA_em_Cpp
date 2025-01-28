@@ -7,11 +7,13 @@ int main()
 
     lerCSV("dados/teste.csv", pontos);
 
-    kMeans km(3, pontos);
+    kMeans km(2, 3, pontos);
 
     km.aplicarAlgoritmo();
+    km.mostrarVariancias();
+    km.mostrarCentrosObtidos();
 
-    for (auto i : km.centros) printf("(%.2f,%.2f)\n", i[0],i[1]);
+    // for (auto i : km.centros) printf("(%.2f,%.2f)\n", i[0],i[1]);
 
     return 0;
 }
