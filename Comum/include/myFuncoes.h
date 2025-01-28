@@ -18,6 +18,8 @@ void lerCSV(const string &arquivo, int numEntradas,
             vector<vector<double>> &dadosEntrada, 
             vector<vector<double>> &saidaDesejada);
 
+void lerCSV(const string &arquivo, vector<vector<double>> &pontos);
+
 void salvarCSV(const string &nomeArquivo, 
                const string &nomesColunas,
                const vector<vector<double>> &dados);

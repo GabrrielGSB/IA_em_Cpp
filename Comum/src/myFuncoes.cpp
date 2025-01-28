@@ -81,6 +81,54 @@ void lerCSV(const string &arquivo, int numEntradas,
     arquivoCSV.close();
 }
 
+void lerCSV(const string &arquivo, vector<vector<double>> &pontos) 
+{
+    std::ifstream arquivoCSV(arquivo);
+
+    if (!arquivoCSV.is_open()) 
+    {
+        std::cerr << "Erro ao abrir o arquivo: " << arquivo << std::endl;
+        return;
+    }
+
+    std::string linha;
+
+    // Ignora a primeira linha (cabeçalho)
+    std::getline(arquivoCSV, linha);
+
+    while (std::getline(arquivoCSV, linha)) 
+    {
+        std::stringstream ss(linha);
+        std::string valor;
+        std::vector<double> ponto;
+
+        while (std::getline(ss, valor, ',')) 
+        {
+            valor = limparEspacos(valor); // Remove espaços em torno do valor
+            if (valor.empty()) continue;  // Ignora valores vazios
+
+            try 
+            {
+                double numero = std::stod(valor); // Converte para double
+                ponto.push_back(numero);
+            } 
+            catch (const std::invalid_argument &e) 
+            {
+                std::cerr << "Valor inválido encontrado: " << valor << std::endl;
+                continue; // Ignora valores inválidos
+            }
+        }
+
+        // Adiciona o ponto se houver exatamente dois valores (x, y)
+        if (ponto.size() == 2) 
+        {
+            pontos.push_back(ponto);
+        }
+    }
+
+    arquivoCSV.close();
+}
+
 void salvarCSV(const string &nomeArquivo, const string &nomesColunas,
                const vector<vector<double>> &dados)
 {
