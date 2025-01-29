@@ -1,11 +1,16 @@
 #include "../include/RBF.h"
 
-RBF::RBF(int numEntradas, int numNeuroniosOcultos, vector<vector<double>> &dadosEntrada) :
+RBF::RBF(int numEntradas, int numNeuroniosOcultos, int numSaidas, double taxaAprendizado,
+         vector<vector<double>> &dadosEntrada, vector<vector<double>> &saidasDesejadas) :
          K(numEntradas, numNeuroniosOcultos, dadosEntrada), 
-         numNeuroniosOcultos(numNeuroniosOcultos), dadosEntrada(dadosEntrada)
+         numNeuroniosOcultos(numNeuroniosOcultos), numSaidas(numSaidas), taxaAprendizado(taxaAprendizado),
+         dadosEntrada(dadosEntrada), saidasDesejadas(saidasDesejadas)
 {
     this->saidasCamadasOcultas.resize(numNeuroniosOcultos);
     this->saidas.resize(dadosEntrada.size());
+
+    this->erroAtual = 0;
+    this->somaErro  = 0;
 }
 
 void RBF::aplicarKmeans()
@@ -61,7 +66,49 @@ void RBF::obterSaida()
     }
 }
 
-void RBF::atualizarPesos()
+void RBF::calcularErro(int indiceDadoEntrada)
 {
-
+    this->erroAtual = this->saidasDesejadas[indiceDadoEntrada][0] - this->saidas[indiceDadoEntrada];
+    this->somaErro += this->erroAtual; 
 }
+
+void RBF::calcularGradienteSaida(int indiceDadoEntrada)
+{
+    this->gradienteSaida = this->erroAtual * this->saidas[indiceDadoEntrada];
+}
+
+void RBF::atualizarPesos(int indiceDadoEntrada)
+{
+    for (int i = 0; i < this->numSaidas; i++)
+    {
+        calcularErro(indiceDadoEntrada);
+        calcularGradienteSaida(indiceDadoEntrada);
+
+        bool pesoBias = true;
+
+        int indicePeso = 0;
+        for (double &peso : this->pesosSaida)
+        {
+            if (pesoBias)
+            {
+                peso = peso + 
+                    this->taxaAprendizado * 
+                    this->gradienteSaida;
+
+                pesoBias = false;
+            }
+            else
+            {
+                peso = peso + 
+                        this->taxaAprendizado * 
+                        this->gradienteSaida * 
+                        this->saidasCamadasOcultas[indicePeso][indiceDadoEntrada]; 
+
+                indicePeso++;
+            }
+        }
+    } 
+}
+
+
+

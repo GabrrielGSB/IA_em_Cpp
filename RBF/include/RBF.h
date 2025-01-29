@@ -17,20 +17,30 @@ class RBF
         kMeans K;
 
     public:
-        RBF(int numEntradas, int numNeuroniosOcultos, vector<vector<double>> &dadosEntrada);
+        RBF(int numEntradas, int numNeuroniosOcultos, int numSaidas, double taxaAprendizado, 
+            vector<vector<double>> &dadosEntrada, vector<vector<double>> &saidasDesejadas);
 
         int numNeuroniosOcultos;
+        int numSaidas;
+
+        double erroAtual;
+        double somaErro;
+        double gradienteSaida;
+        double taxaAprendizado;
 
         vector<double> pesosSaida;
         vector<double> saidas;
         vector<vector<double>> dadosEntrada;
+        vector<vector<double>> saidasDesejadas;
         vector<vector<double>> saidasCamadasOcultas;
 
         void aplicarKmeans();
         void aplicarGaussiana();
         void inicializarPesosCamadaSaida(string modo);
         void obterSaida();
-        void atualizarPesos();
+        void calcularErro(int indiceDadoEntrada);
+        void calcularGradienteSaida(int indiceDadoEntrada);
+        void atualizarPesos(int indiceDadoEntrada);
 };
 
 #endif

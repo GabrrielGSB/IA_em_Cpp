@@ -284,9 +284,9 @@ void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDeseja
                 else
                 {
                     peso = peso + 
-                        this->taxaAprendizado * 
-                        ni.gradienteLocal * 
-                        this->saidasCamadas[saidasCamadas.size() - 2][pesoCount]; 
+                           this->taxaAprendizado * 
+                           ni.gradienteLocal * 
+                           this->saidasCamadas[saidasCamadas.size() - 2][pesoCount]; 
 
                     pesoCount++;
                 }
