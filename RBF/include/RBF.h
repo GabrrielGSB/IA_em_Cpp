@@ -5,6 +5,7 @@ using namespace std;
 
 #include "../../K_MEANS/include/K_MEANS.h"
 #include "../../Comum/include/myFuncoes.h"
+#include "../../Comum/include/Neuronio.h"
 #include <vector>
 #include <string>
 #include <numeric>
@@ -17,11 +18,10 @@ class RBF
         kMeans K;
 
     public:
-        RBF(int numEntradas, int numNeuroniosOcultos, int numSaidas, double taxaAprendizado, 
+        RBF(vector<int> estruturaRede, double taxaAprendizado, 
             vector<vector<double>> &dadosEntrada, vector<vector<double>> &saidasDesejadas);
 
-        int numNeuroniosOcultos;
-        int numSaidas;
+        int numEntradas, numNeuroniosOcultos, numSaidas;
 
         double erroAtual;
         double somaErro;
@@ -29,18 +29,23 @@ class RBF
         double taxaAprendizado;
 
         vector<double> pesosSaida;
-        vector<double> saidas;
         vector<vector<double>> dadosEntrada;
         vector<vector<double>> saidasDesejadas;
-        vector<vector<double>> saidasCamadasOcultas;
+        vector<vector<double>> saidasCamadas;
+        vector<vector<Neuronio>> rede;
 
         void aplicarKmeans();
-        void aplicarGaussiana();
         void inicializarPesosCamadaSaida(string modo);
-        void obterSaida();
-        void calcularErro(int indiceDadoEntrada);
-        void calcularGradienteSaida(int indiceDadoEntrada);
-        void atualizarPesos(int indiceDadoEntrada);
+        void feedFoward(vector<double> dadoEntrada);
+        void calcularErro(Neuronio &n, double &saidaDesejada);
+        void calcularErro(double &saida, double &saidaDesejada);
+        void calcularGradienteSaida(Neuronio &n);
+        void atualizarPesosSaida(vector<double> dadoEntrada, vector<double> saidaDesejada);
+        void treinar(vector<vector<double>> &dadosEntrada, 
+                     vector<vector<double>> &saidasDesejadas,
+                     int numEpisodios, int IDtreinamento);
+        void testar(vector<vector<double>> &dadosEntrada, 
+                    vector<vector<double>> &saidasDesejadas);
 };
 
 #endif

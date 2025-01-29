@@ -98,7 +98,11 @@ void kMeans::calcularVariancia()
 
             this->variancias[indiceAgrupamento] += inner_product(diferenca.begin(), diferenca.end(), 
                                                                  diferenca.begin(), 0.0);
+
+            
         }
+        this->variancias[indiceAgrupamento] /= agrupamento.size();
+        
         indiceAgrupamento++;
     }
 }
