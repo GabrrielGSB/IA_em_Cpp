@@ -3,12 +3,22 @@
 
 int main()
 {
+    // vector<vector<double>> pontos;
+    // lerCSV("dados/teste.csv", pontos);
+
     vector<vector<double>> pontos;
+    vector<vector<double>> a;
 
-    lerCSV("dados/teste.csv", pontos);
+    lerCSV("dados/teste1.csv", 3, 
+            pontos, 
+            a);
 
-    kMeans km(2, 3, pontos);
 
+    kMeans km(3, 3, pontos);
+
+    // km.atualizarCentros();
+    // km.preencherAgrupamentos();
+    // km.atualizarCentros();
     km.aplicarAlgoritmo();
     km.mostrarVariancias();
     km.mostrarCentrosObtidos();

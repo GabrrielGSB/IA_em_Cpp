@@ -34,6 +34,7 @@ class RBF
         vector<vector<double>> saidasCamadas;
         vector<vector<Neuronio>> rede;
 
+        void mostrarPesos();
         void aplicarKmeans();
         void inicializarPesosCamadaSaida(string modo);
         void feedFoward(vector<double> dadoEntrada);

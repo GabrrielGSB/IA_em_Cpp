@@ -31,8 +31,10 @@ class Neuronio
 
 		//Funções
 		void definirSinalBias(vector<double> &entrada);
+
 		void aplicarEntrada(vector<double> entrada);
 		void aplicarEntrada(vector<double> entrada, vector<double> centro, double variancia);
+		
 		void inicializarPesos(string mode);	
 		
 		double sigmoide(double entrada);

@@ -18,21 +18,27 @@ void kMeans::atualizarCentros()
     }
     else
     {
-        vector<double> somaPontosEntrada;
+        vector<double> vetorSoma;
         vector<double> novoCentro(this->numEntradas);
 
         int countAgrupamento = 0;
         for (auto &agrupamento : this->agrupamentos)
         {
-            somaPontosEntrada.clear();
-            somaPontosEntrada.resize(this->numEntradas);
+            vetorSoma.clear();
+            vetorSoma.resize(this->numEntradas);
 
-            for (auto &ponto : agrupamento)
+            for (auto &vetor : agrupamento)
             {
-                for (int i = 0; i < int(ponto.size()); i++) somaPontosEntrada[i] += ponto[i];
+                int indiceComponente = 0;
+                for (auto &componente : vetor) 
+                {
+                    vetorSoma[indiceComponente] += componente;
+                    
+                    indiceComponente++;                
+                }
             }
 
-            for (int i = 0; i < int(agrupamento[0].size()); i++) novoCentro[i] = somaPontosEntrada[i] / this->numAgrupamentos;
+            for (int i = 0; i < this->numEntradas; i++) novoCentro[i] = vetorSoma[i] / agrupamento.size();
             
             this->centros[countAgrupamento] = novoCentro;
 
@@ -44,14 +50,15 @@ void kMeans::atualizarCentros()
 void kMeans::preencherAgrupamentos()
 {
     vector<vector<vector<double>>> agrupamentosOLD = this->agrupamentos;
+
     this->agrupamentos.clear();
     this->agrupamentos.resize(this->numAgrupamentos);
     
     for (vector<double> &dado : this->dadosEntrada)
     {
-        int indiceCentro = 0;
         vector<double> distancias(this->numAgrupamentos);
 
+        int indiceCentro = 0;
         for (vector<double> &centro : this->centros)
         {
             vector<double> diferenca(dado.size());
@@ -125,11 +132,12 @@ void kMeans::mostrarCentrosObtidos()
     for (auto &centro : this->centros)
     {
         printf("A centroide %d está em ", indiceCentro+1);
-        
+        printf("(");
+
         for (auto &valor : centro)
         {
-            if (valor == centro.back()) printf("%.2f)", valor);
-            else                        printf("(%.2f, ", valor);
+            if (valor == centro.back()) printf("%.4f)", valor);
+            else                        printf("%.4f, ", valor);
         } 
         printf("\n");
         indiceCentro++;

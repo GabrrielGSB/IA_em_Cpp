@@ -49,7 +49,7 @@ double Neuronio::sigmoide(double entrada, bool derivada)
 }
 double Neuronio::gaussiana(double normaEucliQuad, double variancia)
 {
-	return exp(-(1 / 2*variancia) * normaEucliQuad); 
+	return exp(-(1 / (2*variancia)) * normaEucliQuad); 
 }
 
 void Neuronio::definirSinalBias(vector<double> &entrada)
@@ -61,7 +61,7 @@ void  Neuronio::aplicarFuncAtivacao(double entrada)
 {
 	if (this->funcAtiv == "degrau")   this->saida = degrau(entrada);
 	if (this->funcAtiv == "sigmoide") this->saida = sigmoide(entrada);
-	if (this->funcAtiv == "Linear")   this->saida = entrada;
+	if (this->funcAtiv == "linear")   this->saida = entrada;
 }
 void  Neuronio::aplicarFuncAtivacao(double normaEucliQuad, double variancia)
 {
@@ -91,7 +91,7 @@ void  Neuronio::aplicarEntrada(vector<double> entrada, vector<double> centro, do
 			 (double Xi, double Wi) { return Xi - Wi; });
 
 	double normaEucliQuad = inner_product(diferenca.begin(), diferenca.end(), diferenca.begin(), 0.0);
-
+	
 	aplicarFuncAtivacao(normaEucliQuad, variancia);
 }
 

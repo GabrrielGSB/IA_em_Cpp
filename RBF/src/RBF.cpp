@@ -4,7 +4,7 @@ RBF::RBF(vector<int> estruturaRede, double taxaAprendizado,
          vector<vector<double>> &dadosEntrada, vector<vector<double>> &saidasDesejadas) :
          numEntradas(estruturaRede[0]), numNeuroniosOcultos(estruturaRede[1]), numSaidas(estruturaRede[2]),
          taxaAprendizado(taxaAprendizado), dadosEntrada(dadosEntrada), saidasDesejadas(saidasDesejadas),
-         K(numEntradas, numNeuroniosOcultos, dadosEntrada)
+         K(estruturaRede[0], estruturaRede[1], dadosEntrada)
 {
     this->erroAtual = 0;
     this->somaErro  = 0;
@@ -20,7 +20,7 @@ RBF::RBF(vector<int> estruturaRede, double taxaAprendizado,
 
         if (i == 2)
         {
-            for (int j = 0; j < estruturaRede[i]; j++) this->rede[i-1].emplace_back(Neuronio(taxaAprendizado,estruturaRede[i-1], "gaussiana"));
+            for (int j = 0; j < estruturaRede[i]; j++) this->rede[i-1].emplace_back(Neuronio(taxaAprendizado,estruturaRede[i-1], "linear"));
         }
     }
 
@@ -53,6 +53,7 @@ void RBF::feedFoward(vector<double> dadoEntrada)
     {
         if (indiceCamada == 0)
         {
+          
             int indiceNeuronio = 0;
             for (Neuronio &Ni : camada)
             {
@@ -74,8 +75,35 @@ void RBF::feedFoward(vector<double> dadoEntrada)
                 indiceNeuronio++;
             } 
         }
+
         indiceCamada++;    
     }
+}
+
+void RBF::mostrarPesos()
+{
+    printf("\n");
+    printf("Pesos de cada conexão dos neurônios:\n");
+
+    int camadaCount = 1;  
+    for (vector<Neuronio> &camada : this->rede) 
+    {
+        printf(" ->Camada %d:\n", camadaCount++);
+
+        int neuronioCount = 1;  
+        for (Neuronio &ni: camada) 
+        {
+            printf("   ->Neurônio %d:\n", neuronioCount++);
+
+            int pesoCount = 1;  
+            for (double &peso : ni.pesos) 
+            {
+                printf("     ->W%d: %.8f\n", pesoCount++, peso);
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
 }
 
 void RBF::calcularErro(Neuronio &n, double &saidaDesejada)
@@ -134,18 +162,18 @@ void RBF::treinar(vector<vector<double>> &dadosEntrada,
                   int numEpisodios, int IDtreinamento)
 {
     aplicarKmeans();
+ 
+    for (int i = 0; i < numEpisodios; i++)
+    {
+        int indiceDadoEntrada = 0;
+        for (auto &dadoEntrada : dadosEntrada)
+        {
+            feedFoward(dadoEntrada);
+            atualizarPesosSaida(dadoEntrada, saidasDesejadas[indiceDadoEntrada]);
 
-    // for (int i = 0; i < numEpisodios; i++)
-    // {
-    //     int indiceDadoEntrada = 0;
-    //     for (auto &dadoEntrada : dadosEntrada)
-    //     {
-    //         feedFoward(dadoEntrada);
-    //         atualizarPesosSaida(dadoEntrada, saidasDesejadas[indiceDadoEntrada]);
-
-    //         indiceDadoEntrada++;
-    //     }
-    // }
+            indiceDadoEntrada++;
+        }
+    }
 }
 
 void RBF::testar(vector<vector<double>> &dadosEntrada, vector<vector<double>> &saidasDesejadas)
