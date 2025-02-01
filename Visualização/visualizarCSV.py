@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib as mat
 import matplotlib.pyplot as plt
 mat.use('TkAgg')
-arquivo = pd.read_csv('MLP/ErroQuadMed(2).csv')
+arquivo = pd.read_csv('RBF/ErroQuadMed(3).csv')
 
 plt.figure(figsize=(10, 6))
 plt.plot(arquivo.index, arquivo[arquivo.columns[0]], linestyle='-', color='b', label='Dados')  

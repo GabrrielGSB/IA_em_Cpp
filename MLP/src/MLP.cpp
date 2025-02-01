@@ -653,7 +653,7 @@ void MLP::salvarPesos()
 
 void MLP::salvarErro()
 {
-    this->erros[this->erroCount] = this->erroAtual;
+    this->erros.push_back(this->erroAtual);
 }
 
 void MLP::salvarErro(int erroCount)
