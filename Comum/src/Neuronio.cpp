@@ -83,7 +83,7 @@ void  Neuronio::aplicarEntrada(vector<double> entrada)
 
 	aplicarFuncAtivacao(this->somaEntradasPonderadas);
 }
-void  Neuronio::aplicarEntrada(vector<double> entrada, vector<double> centro, double variancia)
+void Neuronio::aplicarEntrada(vector<double> entrada, vector<double> centro, double variancia)
 {
 	vector<double> diferenca(entrada.size());
 

@@ -59,6 +59,7 @@ class MLP
 
 		void testarRede(vector<vector<double>> &dadosEntrada, 
 				        vector<vector<double>> &saidasDesejadas);	
+						
 		void salvarPesos();
 		void zerarPesos();
 		void salvarErroQuaMedCSV(string &nomeArquivo, vector<double> dadosErroQuadMed);

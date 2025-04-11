@@ -64,10 +64,8 @@ void MLP::inicializarPesosRede(string modo)
     já são inicializados na construção do neurônio.
     */
 
-    // Iteração sobre as camadas da rede
     for (vector<Neuronio> &camada : this->rede) 
     {
-        // Iteração sobre os neurônios de uma camada
         for (Neuronio &ni: camada) 
         {
             ni.inicializarPesos(modo);
@@ -77,10 +75,6 @@ void MLP::inicializarPesosRede(string modo)
 
 void MLP::mostrarSaida(vector<double> entradaAtual)
 {
-    /*
-    Função para mostrar a saída de uma determinada entrada
-    */
-
     printf("\n");
     printf(" *Entradas atuais:\n");
 
@@ -283,9 +277,9 @@ void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDeseja
                 }
                 else
                 {
-                    peso = peso + 
+                    peso = peso                  + 
                            this->taxaAprendizado * 
-                           ni.gradienteLocal * 
+                           ni.gradienteLocal     * 
                            this->saidasCamadas[saidasCamadas.size() - 2][pesoCount]; 
 
                     pesoCount++;
@@ -318,14 +312,15 @@ void MLP::backPropagation(vector<double> dadoEntrada, vector<double> saidaDeseja
 
                     if (pesoBias)
                     {
-                        peso = peso +
+                        peso = peso               +
                             this->taxaAprendizado * 
                             ni.gradienteLocal;
+
                         pesoBias = false;
                     }
                     else if (funcAux::checarIndiceCamadaSaida(this->saidasCamadas, numCalculoGradienteAtual))
                     {
-                        peso = peso + 
+                        peso = peso               + 
                             this->taxaAprendizado * 
                             ni.gradienteLocal     *
                             this->saidasCamadas[saidasCamadas.size() - 2 - numCalculoGradienteAtual][numSaidaCount];
@@ -480,13 +475,13 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
     // Itera sobre o número de episódios totais
     if (mode == "numeroEpisodios")
     {
-        mostrarPesos();
+        // mostrarPesos();
         for (int i = 0; i < this->numEpisodiosTotais; i++)
         {
             zerarPesos();
             this->pesosCamadasOld = this->pesosCamadas;
             vector<vector<vector<double>>> pesosCamadasTemp = pesosCamadasOld;
-            
+            printf("%d\n",i);
             
             for (size_t j = 0; j < dadosEntrada.size(); j++)
             {
@@ -499,7 +494,7 @@ void MLP::treinar(vector<vector<double>> &dadosEntrada,
                 else                              atualizarMatrizPesos = true;
             }
         }
-        mostrarPesos();
+        // mostrarPesos();
     }
     else if (mode  == "erroMinimo")
     {
